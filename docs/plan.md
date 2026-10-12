@@ -137,6 +137,27 @@ exemplo) poderia reaproveitá-la.
   projeto porque funciona igual no Windows. **Cuidado:** `docker compose down -v` apaga o volume
   (e os dados); o `down` normal não.
 
+### Tipos dos campos
+
+Definidos a partir de uma amostra real da EVO (76 vendas, 76 itens), analisada só pelo formato,
+sem copiar dados. As colunas mantêm os nomes da EVO.
+
+| Valor na EVO | Exemplo de formato | Tipo no Postgres | Prisma | Por quê |
+| --- | --- | --- | --- | --- |
+| IDs e contagens | `17081` | `integer` | `Int` | Maior ID visto: ~19 mil; o `integer` vai até 2,1 bilhões. |
+| Dinheiro (`itemValue`, `saleValue`, `discount`, `valueNextMonth`) | `4380`, `99.9` | `numeric(12,2)` | `Decimal` | Exato. `float` erra centavos (`0.1 + 0.2 ≠ 0.3`). |
+| Datas (`saleDate`, `updateDate`, `membershipStartDate`…) | `2026-10-07T08:00:00` | `timestamp(0)` | `DateTime` | Vêm **sem fuso**, no horário local da academia; ficam assim. |
+| `timeZone` | `-03:00:00` | `text` | `String` | Guardado como veio, caso precise converter depois. |
+| Textos (nomes, `observations`, `voucher`…) | — | `text` | `String` | No Postgres, `text` e `varchar` têm o mesmo desempenho; sem limite arbitrário. |
+| `cpfResponsible` | 11 dígitos | `text` | `String` | CPF é texto: pode começar com zero. Dado pessoal (LGPD). |
+| Flags (`flSwimming`, `flReceiptOnly`, `flAllowLocker`) | `true` | `boolean` | `Boolean` | — |
+| Objetos (`member`, `prospect`) | `{ … }` | `jsonb` | `Json` | Estrutura grande e variável; dá para consultar dentro do JSON. Dados pessoais (LGPD). |
+| **Sempre nulos na amostra** (`removed`, `removalDate`, `idProduct`, `receivables`…) | `null` | `jsonb` | `Json` | Sem valor não dá para saber o tipo. `jsonb` aceita qualquer coisa, então o sync não quebra; quando aparecerem valores, uma migration converte para o tipo certo. |
+
+- **Obrigatórios** (`NOT NULL`): só os campos que vieram preenchidos em **todos** os registros da
+  amostra (ex.: `idSale`, `saleDate`, `idBranch`, `itemValue`). O resto aceita nulo.
+- `saleItens` não vira coluna: cada item vira uma linha em `itens_venda`.
+
 ## Fluxo de trabalho no Git
 
 A `main` é sempre a versão estável e **não recebe commit direto**: tudo entra por Pull Request,

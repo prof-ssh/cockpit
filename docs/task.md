@@ -17,7 +17,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 ## Etapa 2 — Montar o banco
 
 - [x] 2.1 Instalar o Prisma em `src/database/` (`DATABASE_URL` no `.env`) e criar o conector `client.ts`.
-- [ ] 2.2 Definir os tipos SQL dos campos a partir do JSON que a API EVO devolve.
+- [x] 2.2 Definir os tipos SQL dos campos a partir do JSON que a API EVO devolve.
 - [ ] 2.3 Modelar no `schema.prisma`: `vendas` (PK `idSale`), `itens_venda` (PK `idSaleItem`, FK `idSale`) e `coletas`.
 - [ ] 2.4 Gerar a primeira migration (`prisma migrate dev`) e aplicar no container.
 - [x] 2.5 Configurar o volume e testar que os dados sobrevivem a `docker compose down` / `up`.
