@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
+
+// Fonte dos títulos do design system (tokens.css usa --font-outfit).
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable}`}>
       <body>{children}</body>
     </html>
   );
