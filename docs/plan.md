@@ -49,6 +49,7 @@ cockpit/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env.example
+├── docs/                 # contexto, plano, setup e tarefas
 └── src/
     ├── app/              # porta de
     │   ├── page.tsx      # entrada do Next

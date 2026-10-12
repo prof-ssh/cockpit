@@ -9,9 +9,9 @@ preparo das máquinas em [`setup.md`](setup.md).
       `frontend/`, `backend/` e `database/` (ver `plan.md`).
 - [x] 1.2 Revisar o `.gitignore` gerado (`.env`, `node_modules`, `.next`) e criar `.gitattributes` e `.env.example`.
 - [x] 1.3 Criar a conta no GitHub (com 2FA) e cadastrar a chave SSH de cada máquina (ver [`setup.md`](setup.md)).
-- [ ] 1.4 `git init`, primeiro commit, criar o repositório **público** no GitHub (com push protection) e fazer o push via SSH.
-- [ ] 1.5 Proteger a `main` com um ruleset: só entra por Pull Request (ver [`setup.md`](setup.md)).
-- [ ] 1.6 Instalar o Docker em cada máquina (passo a passo por sistema em [`setup.md`](setup.md)).
+- [x] 1.4 `git init`, primeiro commit, criar o repositório **público** no GitHub (com push protection) e fazer o push via SSH.
+- [x] 1.5 Proteger a `main` com um ruleset: só entra por Pull Request (ver [`setup.md`](setup.md)).
+- [ ] 1.6 Instalar o Docker em cada máquina (passo a passo por sistema em [`setup.md`](setup.md)). Linux: ok.
 - [ ] 1.7 Criar o `docker-compose.yml` só com o `db` e validar nas duas máquinas, já no fluxo de branch + PR.
 
 ## Etapa 2 — Montar o banco
