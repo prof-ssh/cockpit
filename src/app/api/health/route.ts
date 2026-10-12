@@ -1,2 +1,2 @@
-// A rota só aponta para o controller (src/backend/http).
-export { GET } from "@/backend/http/health.controller";
+// O Next exige este arquivo; a rota de verdade fica em src/backend/routes.
+export { GET } from "@/backend/routes/health.route";
