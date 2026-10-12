@@ -32,7 +32,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 - [x] 3.5 Use-case `sincronizar-vendas.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
       transação) e registra em `coletas`.
 - [x] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
-- [ ] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
+- [x] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
 - [ ] 3.8 Rotas de leitura para o cockpit (depende da 4.1).
 
 ## Etapa 4 — Montar o front (páginas do Next)
