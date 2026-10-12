@@ -1,6 +1,6 @@
 # Contexto — TheSen5es Cockpit
 
-Visão rápida do projeto. Detalhes em [`plan.md`](plan.md) (arquitetura e decisões) e
+Visão rápida do projeto. Detalhes em [`plan.md`](plan.md) (arquitetura e decisões),
 [`task.md`](task.md) (tarefas para executar) e [`todo.md`](todo.md) (o que ajustar depois).
 
 ## O que é
