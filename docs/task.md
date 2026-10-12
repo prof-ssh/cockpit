@@ -20,7 +20,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 - [ ] 2.2 Definir os tipos SQL dos campos a partir do JSON que a API EVO devolve.
 - [x] 2.3 Modelar no `schema.prisma`: `vendas` (PK `idSale`), `itens_venda` (PK `idSaleItem`, FK `idSale`) e `coletas`.
 - [ ] 2.4 Gerar a primeira migration (`prisma migrate dev`) e aplicar no container.
-- [ ] 2.5 Configurar o volume e testar que os dados sobrevivem a `docker compose down` / `up`.
+- [x] 2.5 Configurar o volume e testar que os dados sobrevivem a `docker compose down` / `up`.
 - [ ] 2.6 Criar os repositories de `vendas` (vendas e itens, com `createMany({ skipDuplicates: true })`) e `coletas`.
 
 ## Etapa 3 — Montar o backend (rotas de API do Next)
