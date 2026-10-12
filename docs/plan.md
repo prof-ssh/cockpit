@@ -164,6 +164,28 @@ Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento
 | `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
 | `erro` | `text` | Mensagem quando `status = erro`. |
 
+### Tabela `coleta_falhas` (decidida, ainda não implementada)
+
+Hoje as vendas que falham no sync só aparecem no log do terminal e se perdem. Esta tabela guarda
+**só as vendas que deram errado**, ligadas à coleta que as gerou (cabeçalho / detalhe, como
+`vendas` → `itens_venda`). Serve para listar os IDs, entender o motivo e reprocessar.
+
+| Coluna | Tipo | O que guarda |
+| --- | --- | --- |
+| `id` | `serial` | Gerado pelo banco. |
+| `coletaId` | `integer`, FK → `coletas` | A coleta que gerou a falha (o período dela). Apagar a coleta apaga as falhas juntas. |
+| `idSale` | `integer` | A venda que falhou. É a unidade de reprocessamento: `GET /api/v2/sales/{idSale}` na EVO traz a venda com os itens. |
+| `idSaleItem` | `integer`, opcional | Qual item causou a falha, quando foi num item. Só detalhe. |
+| `motivo` | `text` curto | O primeiro campo com problema (ex.: `saleItens.1.itemValue: esperado número`) ou a regra que reprovou. |
+| `status` | `pendente` / `resolvida` | O reprocessamento marca `resolvida` em vez de apagar. |
+
+- **Por que a falha é da venda e não do item:** venda e itens são gravados juntos. Um item ruim
+  tira a venda inteira, e não existe "reprocessar só um item".
+- **`idSale` e `idSaleItem` em colunas separadas:** são numerações diferentes (a venda 100 e o
+  item 100 não têm relação); misturar numa coluna só deixaria o ID ambíguo.
+- **Em aberto:** `idSale` aceitar nulo (venda sem ID válido) e como limpar as falhas antigas
+  (ver [`todo.md`](todo.md)).
+
 ## Banco de dados
 
 | Tabela | Chave primária | Observações |
