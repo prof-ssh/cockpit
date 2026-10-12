@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { NovaVenda, NovoItemVenda } from "@/database/repositories/vendas.repository";
-import type { VendaComItens } from "../../domain/vendas";
+import type { Falha, VendaComItens } from "../../domain/vendas";
 
 // Formato de uma venda da EVO e conversão para os tipos do banco
 // (ver "Tipos dos campos" em docs/plan.md). Campos que a EVO mandar a mais
@@ -102,15 +102,31 @@ export type VendaConvertida = VendaComItens<NovaVenda, NovoItemVenda>;
 /** Valida e converte uma venda crua da EVO. */
 export function converterVenda(
   bruta: unknown,
-): { ok: true; dados: VendaConvertida } | { ok: false; motivo: string } {
+): { ok: true; dados: VendaConvertida } | { ok: false; falha: Falha } {
   const resultado = vendaSchema.safeParse(bruta);
-  if (!resultado.success) {
-    // Só o caminho do campo, nunca o valor (dados pessoais).
-    const motivo = resultado.error.issues
-      .map((i) => `${i.path.join(".") || "(venda)"}: ${i.message}`)
-      .join("; ");
-    return { ok: false, motivo };
+  if (resultado.success) {
+    const { saleItens, ...venda } = resultado.data;
+    return { ok: true, dados: { venda, itens: saleItens } };
   }
-  const { saleItens, ...venda } = resultado.data;
-  return { ok: true, dados: { venda, itens: saleItens } };
+
+  // Só o primeiro problema e só o caminho do campo, nunca o valor (dados pessoais).
+  const [primeiro, ...outros] = resultado.error.issues;
+  const caminho = primeiro.path.join(".") || "(venda)";
+  const motivo = `${caminho}: ${primeiro.message}` + (outros.length ? ` (+${outros.length})` : "");
+
+  const crua = (bruta ?? {}) as { idSale?: unknown; saleItens?: unknown };
+  const [raiz, posicao] = primeiro.path;
+  const item =
+    raiz === "saleItens" && typeof posicao === "number" && Array.isArray(crua.saleItens)
+      ? (crua.saleItens[posicao] as { idSaleItem?: unknown } | undefined)
+      : undefined;
+
+  return {
+    ok: false,
+    falha: { idSale: inteiroOuNulo(crua.idSale), idSaleItem: inteiroOuNulo(item?.idSaleItem), motivo },
+  };
+}
+
+function inteiroOuNulo(valor: unknown): number | null {
+  return Number.isInteger(valor) ? (valor as number) : null;
 }
