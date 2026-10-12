@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { NovaVenda, NovoItemVenda } from "@/database/repositories/vendas.repository";
+import type { VendaComItens } from "../../domain/vendas";
 
 // Formato de uma venda da EVO e conversão para os tipos do banco
 // (ver "Tipos dos campos" em docs/plan.md). Campos que a EVO mandar a mais
@@ -62,53 +63,41 @@ const itemSchema = z.object({
   valueNextMonth: dinheiroOpc,
 }) satisfies z.ZodType<NovoItemVenda, unknown>;
 
-const vendaSchema = z
-  .object({
-    idSale: int,
-    idMember: intOpc,
-    idEmployee: qualquer,
-    nameEmployee: qualquer,
-    idProspect: intOpc,
-    idResponsible: intOpc,
-    idMemberResponsible: intOpc,
-    cpfResponsible: textoOpc,
-    idEmployeeSale: int,
-    updateDate: data,
-    nameEmployeeSale: texto,
-    idCommissionedEmployee: intOpc,
-    nameCommissionedEmployee: textoOpc,
-    saleDate: data,
-    saleDateServer: data,
-    timeZone: texto,
-    idPersonal: qualquer,
-    removed: qualquer,
-    idEmployeeRemoval: qualquer,
-    removalDate: qualquer,
-    idBranch: int,
-    observations: textoOpc,
-    idSaleRecurrency: intOpc,
-    saleSource: intOpc,
-    idSaleMigration: qualquer,
-    idCartToken: qualquer,
-    member: objeto,
-    prospect: objetoOpc,
-    receivables: qualquer,
-    registrationKind: textoOpc,
-    saleItens: z.array(itemSchema).nullish().transform((v) => v ?? []),
-  })
-  .superRefine((venda, ctx) => {
-    venda.saleItens.forEach((item, i) => {
-      if (item.idSale !== venda.idSale) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["saleItens", i, "idSale"],
-          message: "idSale do item diferente do da venda",
-        });
-      }
-    });
-  });
+const vendaSchema = z.object({
+  idSale: int,
+  idMember: intOpc,
+  idEmployee: qualquer,
+  nameEmployee: qualquer,
+  idProspect: intOpc,
+  idResponsible: intOpc,
+  idMemberResponsible: intOpc,
+  cpfResponsible: textoOpc,
+  idEmployeeSale: int,
+  updateDate: data,
+  nameEmployeeSale: texto,
+  idCommissionedEmployee: intOpc,
+  nameCommissionedEmployee: textoOpc,
+  saleDate: data,
+  saleDateServer: data,
+  timeZone: texto,
+  idPersonal: qualquer,
+  removed: qualquer,
+  idEmployeeRemoval: qualquer,
+  removalDate: qualquer,
+  idBranch: int,
+  observations: textoOpc,
+  idSaleRecurrency: intOpc,
+  saleSource: intOpc,
+  idSaleMigration: qualquer,
+  idCartToken: qualquer,
+  member: objeto,
+  prospect: objetoOpc,
+  receivables: qualquer,
+  registrationKind: textoOpc,
+  saleItens: z.array(itemSchema).nullish().transform((v) => v ?? []),
+});
 
-export type VendaConvertida = { venda: NovaVenda; itens: NovoItemVenda[] };
+export type VendaConvertida = VendaComItens<NovaVenda, NovoItemVenda>;
 
 /** Valida e converte uma venda crua da EVO. */
 export function converterVenda(

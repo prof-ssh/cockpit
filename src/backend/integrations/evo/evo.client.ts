@@ -1,7 +1,7 @@
-import { env } from "../config/env";
+import { env } from "../../config/env";
+import { FonteIndisponivelError } from "../../domain/erros";
 
-// Cliente da API EVO: só busca e devolve o JSON cru das vendas.
-// Validar e converter os registros é trabalho do sync.
+// Cliente HTTP da API EVO: só busca e devolve o JSON cru das vendas.
 
 const CAMINHO_VENDAS = "/api/v2/sales";
 const TAMANHO_PAGINA = 1000;
@@ -18,7 +18,7 @@ const PARAMETROS_FIXOS = {
 };
 
 /** Falha ao falar com a EVO (rede, autenticação, resposta inválida). */
-export class EvoError extends Error {}
+export class EvoError extends FonteIndisponivelError {}
 
 /**
  * Busca todas as vendas do período (datas AAAA-MM-DD, inclusivas),
