@@ -104,13 +104,13 @@ em `src/database/generated/` por `prisma generate`, que roda sozinho após o `np
 Disparada manualmente, pelo cockpit ou por uma chamada HTTP. Aceita qualquer período.
 
 ```
-Requisição: { "de": "2026-01-01", "ate": "2026-09-30" }
+Requisição: { "periodoInicio": "2026-01-01", "periodoFim": "2026-09-30" }
 Resposta:   { "criadas": 12, "existentes": 340, "falhas": 0 }
 ```
 
 | Passo | Camada | O que acontece |
 | --- | --- | --- |
-| 1 | `sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `de` não depois de `ate`. |
+| 1 | `sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`. |
 | 2 | `evo.client.ts` | Chama a EVO com `dateSaleStart` / `dateSaleEnd` e Basic Auth, paginando com `take/skip` até página vazia ou HTTP 204. |
 | 3 | `sync.service.ts` | Valida os registros: chaves inteiras, sem duplicatas, `idSale` do item igual ao da venda. |
 | 4 | repositories | Grava numa transação, vendas e depois itens, com `createMany({ skipDuplicates: true })` (no Postgres, `ON CONFLICT DO NOTHING`). |
@@ -118,6 +118,19 @@ Resposta:   { "criadas": 12, "existentes": 340, "falhas": 0 }
 
 A gravação (passos 3 a 5) não depende da EVO. Outra fonte de dados (importar um arquivo, por
 exemplo) poderia reaproveitá-la.
+
+### Tabela `coletas`
+
+Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento`) e atualizada no fim.
+
+| Coluna | Tipo | O que guarda |
+| --- | --- | --- |
+| `id` | `serial` | Gerado pelo banco. |
+| `periodoInicio`, `periodoFim` | `date` | Período pedido no sync. |
+| `status` | `em_andamento` / `sucesso` / `erro` | Situação. Se ficar `em_andamento`, o sync parou no meio. |
+| `iniciadaEm`, `finalizadaEm` | `timestamptz` | Quando começou e terminou (com fuso: é o relógio do servidor). |
+| `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
+| `erro` | `text` | Mensagem quando `status = erro`. |
 
 ## Banco de dados
 

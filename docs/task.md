@@ -18,7 +18,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 
 - [x] 2.1 Instalar o Prisma em `src/database/` (`DATABASE_URL` no `.env`) e criar o conector `client.ts`.
 - [x] 2.2 Definir os tipos SQL dos campos a partir do JSON que a API EVO devolve.
-- [ ] 2.3 Modelar no `schema.prisma`: `vendas` (PK `idSale`), `itens_venda` (PK `idSaleItem`, FK `idSale`) e `coletas`.
+- [x] 2.3 Modelar no `schema.prisma`: `vendas` (PK `idSale`), `itens_venda` (PK `idSaleItem`, FK `idSale`) e `coletas`.
 - [ ] 2.4 Gerar a primeira migration (`prisma migrate dev`) e aplicar no container.
 - [x] 2.5 Configurar o volume e testar que os dados sobrevivem a `docker compose down` / `up`.
 - [ ] 2.6 Criar os repositories de `vendas` (vendas e itens, com `createMany({ skipDuplicates: true })`) e `coletas`.
@@ -28,7 +28,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 - [ ] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
 - [ ] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
 - [ ] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
-- [ ] 3.4 `sync.schema.ts` (Zod): `de` e `ate` obrigatórios, `AAAA-MM-DD`, `de` não depois de `ate`.
+- [ ] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
 - [ ] 3.5 `sync.service.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
       transação) e registra em `coletas`.
 - [ ] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
