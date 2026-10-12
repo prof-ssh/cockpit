@@ -48,6 +48,7 @@ frontend ──HTTP──▶ backend ──▶ database
 cockpit/
 ├── docker-compose.yml
 ├── Dockerfile
+├── prisma.config.ts      # onde ficam o schema e as migrations
 ├── .env.example
 ├── docs/                 # contexto, plano, setup e tarefas
 └── src/
@@ -72,6 +73,7 @@ cockpit/
         ├── schema.prisma
         ├── migrations/
         ├── client.ts     # conector
+        ├── generated/    # cliente gerado (fora do Git)
         └── repositories/
             ├── vendas.repository.ts
             └── coletas.repository.ts
@@ -85,7 +87,8 @@ cockpit/
 | `database/` | Schema e migrations do Prisma, o conector e os repositories, únicos que falam com o banco. |
 
 O `schema.prisma` fica em `src/database/` em vez do padrão `prisma/` na raiz, configurado no
-`package.json`, para tudo do banco ficar num lugar só.
+`prisma.config.ts` (Prisma 7), para tudo do banco ficar num lugar só. O cliente tipado é gerado
+em `src/database/generated/` por `prisma generate`, que roda sozinho após o `npm install`.
 
 ## Rotas da API
 
@@ -129,6 +132,10 @@ exemplo) poderia reaproveitá-la.
 - Campos que chegam como objeto (`member`, `prospect`) ficam como `JSONB` por enquanto.
 - Os campos e tipos são definidos a partir do JSON que a API EVO devolve.
 - Os dados ficam num **volume** do Docker, para sobreviverem quando o container é recriado.
+  É um volume nomeado (`cockpit-db`), guardado pelo próprio Docker fora do projeto (no Linux, em
+  `/var/lib/docker/volumes/`), então nunca vai para o Git. Foi escolhido em vez de uma pasta do
+  projeto porque funciona igual no Windows. **Cuidado:** `docker compose down -v` apaga o volume
+  (e os dados); o `down` normal não.
 
 ### Tipos dos campos
 
