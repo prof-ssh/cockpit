@@ -1,14 +1,69 @@
-/* Tokens do design system: a única fonte de cores, fontes e espaçamentos do app. */
+/* Tokens do design system: a única fonte de cores, fontes e espaçamentos do app.
+   Marca: The Senses Wellness Club. Preto, branco e uma cor só, o Tiffany. */
+
+/* Mustica Pro SemiBold, a fonte de títulos da marca.
+   O arquivo não está no repositório (licença da fonte): coloque-o em public/fonts/.
+   Sem ele, os títulos caem para a fonte do sistema. */
+@font-face {
+  font-family: "Mustica Pro";
+  src:
+    local("Mustica Pro SemiBold"),
+    url("/fonts/MusticaPro-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Cores */
+  --background: #ffffff; /* fundo da página */
+  --foreground: #000000; /* títulos e texto principal */
+  --muted: #f3f6f7; /* fundo de seções alternadas, campos e cards neutros */
+  --muted-foreground: #5c6567; /* texto secundário e legendas (6,0:1 no fundo) */
+  --border: #d6dcde; /* divisórias decorativas */
+  --input: #5c6567; /* borda de campos e controles (precisa de 3:1) */
+  --ring: #1b7884; /* anel de foco */
+
+  --primary: #44bbca; /* Tiffany: CMYK 70/0/30/0, Pantone 15-4722 TCX Capri */
+  --primary-foreground: #000000; /* texto sobre o Tiffany. Nunca branco (2,3:1) */
+  --primary-strong: #1b7884; /* Tiffany escuro para links e texto de destaque (5,2:1) */
+  --primary-soft: #e3f5f7; /* fundo suave de destaque */
+  --brand-black: #000000; /* o preto do logo */
+
+  /* Fontes */
+  --font-family-display: "Mustica Pro", system-ui, sans-serif;
+  --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Espaçamento da marca. No Tailwind: p-2 (8px), p-4 (16px), p-6 (24px), p-12 (48px) */
+  --space-1: 8px; /* entre ícone e texto, rótulo e título */
+  --space-2: 16px; /* padding de botões e campos */
+  --space-3: 24px; /* padding de cards, espaço entre itens */
+  --space-4: 48px; /* espaço entre seções */
+
+  /* Raios: a marca é de cantos retos */
+  --radius-none: 0px; /* blocos, imagens, seções */
+  --radius-small: 2px; /* botões, campos, tags */
+  --radius-medium: 4px; /* cards e modais */
+
+  /* Sombras: a marca não usa sombra. Separe com borda ou com --muted. */
+  --shadow-none: none;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0d0f10;
+    --foreground: #ffffff;
+    --muted: #181b1c;
+    --muted-foreground: #a2abae;
+    --border: #2e3436;
+    --input: #a2abae;
+    --ring: #44bbca;
+
+    --primary: #44bbca;
+    --primary-foreground: #000000;
+    --primary-strong: #44bbca;
+    --primary-soft: #163b40;
+    --brand-black: #000000;
   }
 }
 
@@ -16,4 +71,38 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-brand-black: var(--brand-black);
+
+  /* font-display (títulos) e font-sans (texto) */
+  --font-display: var(--font-family-display);
+  --font-sans: var(--font-family-body);
+
+  /* Tamanhos de título: text-display, text-title, text-heading, text-subheading.
+     Texto usa os padrões do Tailwind: text-base (16/24) e text-sm (14/20). */
+  --text-display: 64px;
+  --text-display--line-height: 64px;
+  --text-display--letter-spacing: -0.01em;
+  --text-title: 40px;
+  --text-title--line-height: 44px;
+  --text-heading: 28px;
+  --text-heading--line-height: 32px;
+  --text-subheading: 20px;
+  --text-subheading--line-height: 26px;
+  /* Rótulo em caixa alta bem espaçado, como o "WELLNESS CLUB" do logo */
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-label--letter-spacing: 0.4em;
+
+  /* rounded-none (já é 0 no Tailwind), rounded-sm, rounded-md */
+  --radius-sm: var(--radius-small);
+  --radius-md: var(--radius-medium);
 }
