@@ -28,7 +28,7 @@ preparo das máquinas em [`setup.md`](setup.md).
 - [ ] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
 - [ ] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
 - [ ] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
-- [ ] 3.4 `sync.schema.ts` (Zod): `de` e `ate` obrigatórios, `AAAA-MM-DD`, `de` não depois de `ate`.
+- [ ] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
 - [ ] 3.5 `sync.service.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
       transação) e registra em `coletas`.
 - [ ] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.

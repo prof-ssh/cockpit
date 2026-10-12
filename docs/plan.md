@@ -104,13 +104,13 @@ em `src/database/generated/` por `prisma generate`, que roda sozinho após o `np
 Disparada manualmente, pelo cockpit ou por uma chamada HTTP. Aceita qualquer período.
 
 ```
-Requisição: { "de": "2026-01-01", "ate": "2026-09-30" }
+Requisição: { "periodoInicio": "2026-01-01", "periodoFim": "2026-09-30" }
 Resposta:   { "criadas": 12, "existentes": 340, "falhas": 0 }
 ```
 
 | Passo | Camada | O que acontece |
 | --- | --- | --- |
-| 1 | `sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `de` não depois de `ate`. |
+| 1 | `sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`. |
 | 2 | `evo.client.ts` | Chama a EVO com `dateSaleStart` / `dateSaleEnd` e Basic Auth, paginando com `take/skip` até página vazia ou HTTP 204. |
 | 3 | `sync.service.ts` | Valida os registros: chaves inteiras, sem duplicatas, `idSale` do item igual ao da venda. |
 | 4 | repositories | Grava numa transação, vendas e depois itens, com `createMany({ skipDuplicates: true })` (no Postgres, `ON CONFLICT DO NOTHING`). |
