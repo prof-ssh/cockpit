@@ -119,6 +119,19 @@ Resposta:   { "criadas": 12, "existentes": 340, "falhas": 0 }
 A gravação (passos 3 a 5) não depende da EVO. Outra fonte de dados (importar um arquivo, por
 exemplo) poderia reaproveitá-la.
 
+### Tabela `coletas`
+
+Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento`) e atualizada no fim.
+
+| Coluna | Tipo | O que guarda |
+| --- | --- | --- |
+| `id` | `serial` | Gerado pelo banco. |
+| `de`, `ate` | `date` | Período pedido. |
+| `status` | `em_andamento` / `sucesso` / `erro` | Situação. Se ficar `em_andamento`, o sync parou no meio. |
+| `iniciadaEm`, `finalizadaEm` | `timestamptz` | Quando começou e terminou (com fuso: é o relógio do servidor). |
+| `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
+| `erro` | `text` | Mensagem quando `status = erro`. |
+
 ## Banco de dados
 
 | Tabela | Chave primária | Observações |

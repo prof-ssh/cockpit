@@ -6,3 +6,104 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// Tipos: ver "Tipos dos campos" em docs/plan.md.
+// Colunas com os nomes da EVO. Campos sempre nulos na amostra ficam como Json?.
+
+/// Uma venda da EVO. PK = idSale (ID da EVO, nunca autoincremento).
+model Venda {
+  idSale                   Int      @id
+  idMember                 Int?
+  idEmployee               Json?
+  nameEmployee             Json?
+  idProspect               Int?
+  idResponsible            Int?
+  idMemberResponsible      Int?
+  cpfResponsible           String?
+  idEmployeeSale           Int
+  updateDate               DateTime @db.Timestamp(0)
+  nameEmployeeSale         String
+  idCommissionedEmployee   Int?
+  nameCommissionedEmployee String?
+  saleDate                 DateTime @db.Timestamp(0)
+  saleDateServer           DateTime @db.Timestamp(0)
+  timeZone                 String
+  idPersonal               Json?
+  removed                  Json?
+  idEmployeeRemoval        Json?
+  removalDate              Json?
+  idBranch                 Int
+  observations             String?
+  idSaleRecurrency         Int?
+  saleSource               Int?
+  idSaleMigration          Json?
+  idCartToken              Json?
+  member                   Json
+  prospect                 Json?
+  receivables              Json?
+  registrationKind         String?
+
+  itens ItemVenda[]
+
+  @@map("vendas")
+}
+
+/// Um item de uma venda (saleItens na EVO). PK = idSaleItem.
+model ItemVenda {
+  idSaleItem                  Int       @id
+  idSale                      Int
+  description                 String
+  item                        String
+  itemValue                   Decimal   @db.Decimal(12, 2)
+  saleValue                   Decimal   @db.Decimal(12, 2)
+  saleValueWithoutCreditValue Json?
+  quantity                    Int
+  idMembership                Int?
+  additionalType              Json?
+  idMembershipRenewed         Int?
+  numMembers                  Int?
+  idProduct                   Json?
+  idService                   Int?
+  corporatePartnershipName    Json?
+  coporatePartnershipId       Json? // grafia da EVO
+  membershipStartDate         DateTime? @db.Timestamp(0)
+  discount                    Decimal?  @db.Decimal(12, 2)
+  corporateDiscount           Decimal?  @db.Decimal(12, 2)
+  tax                         Decimal?  @db.Decimal(12, 2)
+  voucher                     String?
+  accountingCode              String?
+  municipalServiceCode        Json?
+  flReceiptOnly               Boolean
+  idSaleItemMigration         Json?
+  flSwimming                  Boolean
+  flAllowLocker               Boolean
+  idMemberMembership          Int?
+  valueNextMonth              Decimal?  @db.Decimal(12, 2)
+
+  venda Venda @relation(fields: [idSale], references: [idSale])
+
+  @@index([idSale])
+  @@map("itens_venda")
+}
+
+/// Histórico dos syncs (POST /api/sync). Tabela nossa, não da EVO.
+model Coleta {
+  id           Int          @id @default(autoincrement())
+  de           DateTime     @db.Date
+  ate          DateTime     @db.Date
+  status       StatusColeta @default(em_andamento)
+  iniciadaEm   DateTime     @default(now()) @db.Timestamptz(0)
+  finalizadaEm DateTime?    @db.Timestamptz(0)
+  criadas      Int          @default(0)
+  existentes   Int          @default(0)
+  falhas       Int          @default(0)
+  erro         String?
+
+  @@map("coletas")
+}
+
+enum StatusColeta {
+  em_andamento
+  sucesso
+  erro
+}
