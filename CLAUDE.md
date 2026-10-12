@@ -6,7 +6,7 @@
 - Componentes são do shadcn/ui, com o tema do The Senses em src/frontend/design-system/tokens.css.
 - A cor indica a intenção: Tiffany (primary) = destaque e variação boa; destructive = variação ruim;
   bg-muted com borda tracejada = estimativa. Nunca usar a cor de destaque só para enfeitar.
-- Sem sombras, cantos de 4px, títulos em Mustica Pro (font-display).
+- Sem sombras, cantos de 4px, títulos em Outfit (font-display, carregada pelo next/font).
 - Referência visual da tela de KPIs: docs/kpis-playground.html (abra no navegador).
 - Plano de implementação dos KPIs: docs/kpis.md.
 
