@@ -1,19 +1,6 @@
 /* Tokens do design system: a única fonte de cores, fontes e espaçamentos do app.
    Marca: The Senses Wellness Club. Preto, branco e uma cor só, o Tiffany. */
 
-/* Mustica Pro SemiBold, a fonte de títulos da marca.
-   O arquivo não está no repositório (licença da fonte): coloque-o em public/fonts/.
-   Sem ele, os títulos caem para a fonte do sistema. */
-@font-face {
-  font-family: "Mustica Pro";
-  src:
-    local("Mustica Pro SemiBold"),
-    url("/fonts/MusticaPro-SemiBold.otf") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   /* Cores */
   --background: #ffffff; /* fundo da página */
@@ -31,7 +18,8 @@
   --brand-black: #000000; /* o preto do logo */
 
   /* Fontes */
-  --font-family-display: "Mustica Pro", system-ui, sans-serif;
+  /* Outfit (Google Fonts, licença livre), carregada pelo next/font em src/app/layout.tsx */
+  --font-family-display: var(--font-outfit), system-ui, sans-serif;
   --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Espaçamento da marca. No Tailwind: p-2 (8px), p-4 (16px), p-6 (24px), p-12 (48px) */
