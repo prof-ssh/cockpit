@@ -1,96 +1,160 @@
-/* Tokens do design system: a única fonte de cores, fontes e espaçamentos do app.
-   Marca: The Senses Wellness Club. Preto, branco e uma cor só, o Tiffany. */
+/* Tokens do design system: a única fonte de cores, fontes e raios do app.
+   Marca: The Senses Wellness Club. Preto, branco e uma cor só, o Tiffany.
+   Os nomes são os do shadcn/ui, para os componentes de components/ui usarem direto. */
 
-:root {
-  /* Cores */
-  --background: #ffffff; /* fundo da página */
-  --foreground: #000000; /* títulos e texto principal */
-  --muted: #f3f6f7; /* fundo de seções alternadas, campos e cards neutros */
-  --muted-foreground: #5c6567; /* texto secundário e legendas (6,0:1 no fundo) */
-  --border: #d6dcde; /* divisórias decorativas */
-  --input: #5c6567; /* borda de campos e controles (precisa de 3:1) */
-  --ring: #1b7884; /* anel de foco */
-
-  --primary: #44bbca; /* Tiffany: CMYK 70/0/30/0, Pantone 15-4722 TCX Capri */
-  --primary-foreground: #000000; /* texto sobre o Tiffany. Nunca branco (2,3:1) */
-  --primary-strong: #1b7884; /* Tiffany escuro para links e texto de destaque (5,2:1) */
-  --primary-soft: #e3f5f7; /* fundo suave de destaque */
-  --brand-black: #000000; /* o preto do logo */
-
-  /* Fontes */
-  /* Outfit (Google Fonts, licença livre), carregada pelo next/font em src/app/layout.tsx */
-  --font-family-display: var(--font-outfit), system-ui, sans-serif;
-  --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
-
-  /* Espaçamento da marca. No Tailwind: p-2 (8px), p-4 (16px), p-6 (24px), p-12 (48px) */
-  --space-1: 8px; /* entre ícone e texto, rótulo e título */
-  --space-2: 16px; /* padding de botões e campos */
-  --space-3: 24px; /* padding de cards, espaço entre itens */
-  --space-4: 48px; /* espaço entre seções */
-
-  /* Raios: a marca é de cantos retos */
-  --radius-none: 0px; /* blocos, imagens, seções */
-  --radius-small: 2px; /* botões, campos, tags */
-  --radius-medium: 4px; /* cards e modais */
-
-  /* Sombras: a marca não usa sombra. Separe com borda ou com --muted. */
-  --shadow-none: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d0f10;
-    --foreground: #ffffff;
-    --muted: #181b1c;
-    --muted-foreground: #a2abae;
-    --border: #2e3436;
-    --input: #a2abae;
-    --ring: #44bbca;
-
-    --primary: #44bbca;
-    --primary-foreground: #000000;
-    --primary-strong: #44bbca;
-    --primary-soft: #163b40;
-    --brand-black: #000000;
+/* Tema escuro: segue o sistema, ou o que a pessoa escolher (data-theme no <html>). */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
   }
 }
 
-/* Expõe os tokens como classes do Tailwind (bg-background, text-foreground...) */
+:root {
+  --radius: 0.25rem; /* cantos de 4px: a marca é de cantos quase retos */
+
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #44bbca; /* Tiffany: destaque e variação boa. Nunca só para enfeitar */
+  --primary-foreground: #000000; /* texto sobre o Tiffany. Nunca branco (2,3:1) */
+  --secondary: #f3f6f7;
+  --secondary-foreground: #000000;
+  --muted: #f3f6f7; /* também o fundo das estimativas (com borda tracejada) */
+  --muted-foreground: #5c6567; /* texto secundário (6,0:1 no fundo) */
+  --accent: #e3f5f7; /* Tiffany suave */
+  --accent-foreground: #000000;
+  --destructive: #c62828; /* variação ruim e erros. A marca não tem cor de erro: proposta */
+  --destructive-foreground: #ffffff;
+  --border: #d6dcde; /* divisórias */
+  --input: #5c6567; /* borda de campos e controles (precisa de 3:1) */
+  --ring: #1b7884; /* anel de foco */
+
+  --chart-1: #44bbca; /* Tiffany */
+  --chart-2: #000000;
+  --chart-3: #5c6567;
+  --chart-4: #c9d1d3;
+  --chart-5: #1b7884; /* Tiffany escuro: linhas de tendência e variação boa em texto */
+
+  /* Outfit (Google Fonts, licença livre), carregada pelo next/font em src/app/layout.tsx */
+  --font-family-display: var(--font-outfit), system-ui, sans-serif;
+  --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0d0f10;
+    --foreground: #ffffff;
+    --card: #0d0f10;
+    --card-foreground: #ffffff;
+    --popover: #181b1c;
+    --popover-foreground: #ffffff;
+    --secondary: #181b1c;
+    --secondary-foreground: #ffffff;
+    --muted: #181b1c;
+    --muted-foreground: #a2abae;
+    --accent: #163b40;
+    --accent-foreground: #ffffff;
+    --destructive: #ff8a80;
+    --destructive-foreground: #000000;
+    --border: #2e3436;
+    --input: #a2abae;
+    --ring: #44bbca;
+    --chart-2: #ffffff;
+    --chart-3: #a2abae;
+    --chart-4: #3d4447;
+    --chart-5: #8fdbe4;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #0d0f10;
+  --foreground: #ffffff;
+  --card: #0d0f10;
+  --card-foreground: #ffffff;
+  --popover: #181b1c;
+  --popover-foreground: #ffffff;
+  --secondary: #181b1c;
+  --secondary-foreground: #ffffff;
+  --muted: #181b1c;
+  --muted-foreground: #a2abae;
+  --accent: #163b40;
+  --accent-foreground: #ffffff;
+  --destructive: #ff8a80;
+  --destructive-foreground: #000000;
+  --border: #2e3436;
+  --input: #a2abae;
+  --ring: #44bbca;
+  --chart-2: #ffffff;
+  --chart-3: #a2abae;
+  --chart-4: #3d4447;
+  --chart-5: #8fdbe4;
+  color-scheme: dark;
+}
+
+/* Expõe os tokens como classes do Tailwind (bg-background, text-chart-5, font-display...) */
 @theme inline {
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-strong: var(--primary-strong);
-  --color-primary-soft: var(--primary-soft);
-  --color-brand-black: var(--brand-black);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   /* font-display (títulos) e font-sans (texto) */
   --font-display: var(--font-family-display);
   --font-sans: var(--font-family-body);
 
-  /* Tamanhos de título: text-display, text-title, text-heading, text-subheading.
-     Texto usa os padrões do Tailwind: text-base (16/24) e text-sm (14/20). */
-  --text-display: 64px;
-  --text-display--line-height: 64px;
-  --text-display--letter-spacing: -0.01em;
-  --text-title: 40px;
-  --text-title--line-height: 44px;
-  --text-heading: 28px;
-  --text-heading--line-height: 32px;
-  --text-subheading: 20px;
-  --text-subheading--line-height: 26px;
-  /* Rótulo em caixa alta bem espaçado, como o "WELLNESS CLUB" do logo */
-  --text-label: 12px;
-  --text-label--line-height: 16px;
-  --text-label--letter-spacing: 0.4em;
+  /* A marca não usa sombra: separa com borda ou com --muted. Zera as do shadcn. */
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+}
 
-  /* rounded-none (já é 0 no Tailwind), rounded-sm, rounded-md */
-  --radius-sm: var(--radius-small);
-  --radius-md: var(--radius-medium);
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
 }

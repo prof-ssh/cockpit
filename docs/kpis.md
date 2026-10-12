@@ -147,7 +147,7 @@ Os componentes vêm do shadcn/ui e ficam no design system. Por cima deles criamo
 
 - `npx shadcn@latest init` com o `components.json` apontando para `src/frontend/design-system/components/ui` (componentes) e `src/frontend/design-system/lib/utils.ts` (o `cn`).
 - Os tokens passam a usar os nomes do shadcn em `tokens.css`: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--chart-1` a `--chart-5`, `--radius`. Valores da marca: os mesmos do playground.
-- Ajustes da marca nos componentes: sem sombras, `--radius: 0.25rem`, títulos de card em `font-display` (Mustica Pro).
+- Ajustes da marca nos componentes: sem sombras, `--radius: 0.25rem`, títulos de card em `font-display` (Outfit).
 - Os 4 componentes atuais (Button, Card, Input, Badge) são substituídos pelos do shadcn.
 
 Instalar: `card` `button` `badge` `input` `label` `table` `tabs` `toggle-group` `tooltip` `popover` `command` `checkbox` `separator` `chart`.
@@ -204,4 +204,3 @@ Decisões em aberto:
 - [ ] Previsão de saídas separada por recorrência (churn de quem tem e de quem não tem)?
 - [ ] Contrato cancelado antes do fim conta como saída na data do cancelamento?
 - [ ] Cor de erro (`destructive`): aprovar o vermelho #c62828 (claro) e #ff8a80 (escuro)
-- [ ] Fonte Mustica Pro: confirmar a licença e colocar o arquivo em `public/fonts/` (fora do Git)
