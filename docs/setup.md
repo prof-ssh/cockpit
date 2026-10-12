@@ -277,5 +277,18 @@ O compose sobe três serviços, nesta ordem:
 
 Conferir: <http://localhost:3000/api/health> deve responder `{"status":"ok","banco":"ok"}`.
 
-Para desenvolver sem rebuildar a imagem a cada mudança: `docker compose up -d db`, depois
-`npx prisma migrate deploy` e `npm run dev` (o app em <http://localhost:3000>, recarregando sozinho).
+### No dia a dia (desenvolvendo)
+
+```bash
+npm run dev
+```
+
+Sobe o banco no Docker (se já estiver de pé, não faz nada), aplica as migrations pendentes e inicia
+o app em <http://localhost:3000>, recarregando sozinho a cada mudança no código.
+
+| Comando | O que faz |
+| --- | --- |
+| `npm run dev` | Banco + migrations + app. |
+| `npm run db:up` | Só o banco + migrations. |
+| `npm run db:studio` | Abre o Prisma Studio (<http://localhost:5555>) para ver os dados. Dá para editar e apagar: use só para olhar. |
+| `docker compose down` | Desliga o banco (os dados ficam no volume). |
