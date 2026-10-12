@@ -88,16 +88,16 @@ model ItemVenda {
 
 /// Histórico dos syncs (POST /api/sync). Tabela nossa, não da EVO.
 model Coleta {
-  id           Int          @id @default(autoincrement())
-  de           DateTime     @db.Date
-  ate          DateTime     @db.Date
-  status       StatusColeta @default(em_andamento)
-  iniciadaEm   DateTime     @default(now()) @db.Timestamptz(0)
-  finalizadaEm DateTime?    @db.Timestamptz(0)
-  criadas      Int          @default(0)
-  existentes   Int          @default(0)
-  falhas       Int          @default(0)
-  erro         String?
+  id            Int          @id @default(autoincrement())
+  periodoInicio DateTime     @db.Date
+  periodoFim    DateTime     @db.Date
+  status        StatusColeta @default(em_andamento)
+  iniciadaEm    DateTime     @default(now()) @db.Timestamptz(0)
+  finalizadaEm  DateTime?    @db.Timestamptz(0)
+  criadas       Int          @default(0)
+  existentes    Int          @default(0)
+  falhas        Int          @default(0)
+  erro          String?
 
   @@map("coletas")
 }

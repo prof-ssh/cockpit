@@ -126,7 +126,7 @@ Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento
 | Coluna | Tipo | O que guarda |
 | --- | --- | --- |
 | `id` | `serial` | Gerado pelo banco. |
-| `de`, `ate` | `date` | Período pedido. |
+| `periodoInicio`, `periodoFim` | `date` | Período pedido no sync. |
 | `status` | `em_andamento` / `sucesso` / `erro` | Situação. Se ficar `em_andamento`, o sync parou no meio. |
 | `iniciadaEm`, `finalizadaEm` | `timestamptz` | Quando começou e terminou (com fuso: é o relógio do servidor). |
 | `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
