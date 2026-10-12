@@ -129,6 +129,10 @@ exemplo) poderia reaproveitá-la.
 - Campos que chegam como objeto (`member`, `prospect`) ficam como `JSONB` por enquanto.
 - Os campos e tipos são definidos a partir do JSON que a API EVO devolve.
 - Os dados ficam num **volume** do Docker, para sobreviverem quando o container é recriado.
+  É um volume nomeado (`cockpit-db`), guardado pelo próprio Docker fora do projeto (no Linux, em
+  `/var/lib/docker/volumes/`), então nunca vai para o Git. Foi escolhido em vez de uma pasta do
+  projeto porque funciona igual no Windows. **Cuidado:** `docker compose down -v` apaga o volume
+  (e os dados); o `down` normal não.
 
 ## Fluxo de trabalho no Git
 
