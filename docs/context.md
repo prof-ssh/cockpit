@@ -1,8 +1,7 @@
 # Contexto — TheSen5es Cockpit
 
 Visão rápida do projeto. Detalhes em [`plan.md`](plan.md) (arquitetura e decisões) e
-[`task.md`](task.md) (tarefas para executar). Antes de rodar algo destrutivo, ver
-[`comandos-proibidos.md`](comandos-proibidos.md).
+[`task.md`](task.md) (tarefas para executar).
 
 ## O que é
 
