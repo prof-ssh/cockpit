@@ -25,14 +25,14 @@ preparo das máquinas em [`setup.md`](setup.md).
 
 ## Etapa 3 — Montar o backend (rotas de API do Next)
 
-- [ ] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
-- [ ] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
-- [ ] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
-- [ ] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
-- [ ] 3.5 `sync.service.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
+- [x] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
+- [x] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
+- [x] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
+- [x] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
+- [x] 3.5 Use-case `sincronizar-vendas.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
       transação) e registra em `coletas`.
-- [ ] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
-- [ ] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
+- [x] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
+- [x] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
 - [ ] 3.8 Rotas de leitura para o cockpit (depende da 4.1).
 
 ## Etapa 4 — Montar o front (páginas do Next)

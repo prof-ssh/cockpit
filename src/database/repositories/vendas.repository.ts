@@ -1,4 +1,4 @@
-import { prisma } from "../client";
+import { db } from "../client";
 import type { Prisma } from "../generated/prisma/client";
 
 // Formatos de entrada, já convertidos para os tipos do banco.
@@ -21,9 +21,9 @@ export async function gravarVendas(
   itens: NovoItemVenda[],
 ): Promise<ResultadoGravacao> {
   // Vendas antes dos itens: a FK exige que a venda exista.
-  const [vendasCriadas, itensCriados] = await prisma.$transaction([
-    prisma.venda.createMany({ data: vendas, skipDuplicates: true }),
-    prisma.itemVenda.createMany({ data: itens, skipDuplicates: true }),
+  const [vendasCriadas, itensCriados] = await db().$transaction([
+    db().venda.createMany({ data: vendas, skipDuplicates: true }),
+    db().itemVenda.createMany({ data: itens, skipDuplicates: true }),
   ]);
 
   return {
