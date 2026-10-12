@@ -52,10 +52,12 @@ cockpit/
 ├── .env.example
 ├── docs/                 # contexto, plano, setup e tarefas
 └── src/
+    ├── instrumentation.ts # valida o .env na subida do servidor
     ├── app/              # porta de
     │   ├── page.tsx      # entrada do Next
-    │   └── api/sync/
-    │       └── route.ts
+    │   └── api/
+    │       ├── health/route.ts
+    │       └── sync/route.ts
     │
     ├── frontend/
     │   ├── components/
@@ -64,9 +66,12 @@ cockpit/
     ├── backend/
     │   ├── sync/
     │   │   ├── sync.service.ts
-    │   │   └── sync.schema.ts
+    │   │   └── sync.schema.ts  # corpo do POST /api/sync
     │   ├── evo/
-    │   │   └── evo.client.ts
+    │   │   ├── evo.client.ts   # busca na EVO (paginação, tentativas)
+    │   │   └── evo.schema.ts   # valida e converte cada venda
+    │   ├── health/
+    │   │   └── health.service.ts
     │   └── config/env.ts
     │
     └── database/

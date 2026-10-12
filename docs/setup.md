@@ -263,6 +263,19 @@ clicar em **Merge** no PR.
 ```bash
 git clone git@github.com:<usuario>/cockpit.git
 cd cockpit
-cp .env.example .env    # e preencher os valores
-docker compose up
+cp .env.example .env    # e preencher os valores (inclusive EVO_USERNAME e EVO_PASSWORD)
+docker compose up --build
 ```
+
+O compose sobe três serviços, nesta ordem:
+
+| Serviço | O que faz |
+| --- | --- |
+| `db` | O Postgres. |
+| `migrate` | Aplica as migrations pendentes (`prisma migrate deploy`) e termina. |
+| `app` | O cockpit em <http://localhost:3000>. Só sobe se o `migrate` terminar bem. |
+
+Conferir: <http://localhost:3000/api/health> deve responder `{"status":"ok","banco":"ok"}`.
+
+Para desenvolver sem rebuildar a imagem a cada mudança: `docker compose up -d db`, depois
+`npx prisma migrate deploy` e `npm run dev` (o app em <http://localhost:3000>, recarregando sozinho).
