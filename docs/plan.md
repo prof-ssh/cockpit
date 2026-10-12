@@ -52,21 +52,33 @@ cockpit/
 ├── .env.example
 ├── docs/                 # contexto, plano, setup e tarefas
 └── src/
+    ├── instrumentation.ts # valida o .env na subida do servidor
     ├── app/              # porta de
     │   ├── page.tsx      # entrada do Next
-    │   └── api/sync/
-    │       └── route.ts
+    │   └── api/          # cada route.ts só reexporta de backend/routes
+    │       ├── health/route.ts
+    │       └── sync/route.ts
     │
     ├── frontend/
     │   ├── components/
     │   └── services/     # chamadas à API
     │
     ├── backend/
-    │   ├── sync/
-    │   │   ├── sync.service.ts
-    │   │   └── sync.schema.ts
-    │   ├── evo/
-    │   │   └── evo.client.ts
+    │   ├── routes/           # ROTAS: entende HTTP (valida entrada, escolhe status)
+    │   │   ├── sync.route.ts
+    │   │   ├── sync.schema.ts
+    │   │   └── health.route.ts
+    │   ├── use-cases/        # o que o sistema faz, sem saber de HTTP, EVO ou Prisma
+    │   │   ├── sincronizar-vendas.ts
+    │   │   └── verificar-saude.ts
+    │   ├── domain/           # regras puras, sem I/O
+    │   │   ├── vendas.ts     #   repetidas, item de outra venda
+    │   │   └── erros.ts
+    │   ├── integrations/evo/ # mundo externo
+    │   │   ├── evo.client.ts #   busca na API (paginação, tentativas)
+    │   │   ├── evo.schema.ts #   valida e converte cada venda
+    │   │   └── evo.fonte.ts  #   junta os dois: "fonte de vendas"
+    │   ├── dependencias.ts   # liga os use-cases às peças reais
     │   └── config/env.ts
     │
     └── database/
@@ -83,8 +95,28 @@ cockpit/
 | --- | --- |
 | `app/` | Exigida pelo Next para descobrir telas e rotas. Só faz a ponte: `page.tsx` usa o `frontend/`, `route.ts` chama o `backend/`. |
 | `frontend/` | Componentes de tela e chamadas HTTP à API. |
-| `backend/` | Regras de negócio (`*.service.ts`), validação de entrada com Zod (`*.schema.ts`), integração com a EVO e leitura do `.env` (o app não sobe se faltar variável). |
+| `backend/` | Em camadas (abaixo): rotas HTTP, use-cases, regras de domínio e integrações. Também lê o `.env` (o app não sobe se faltar variável). |
 | `database/` | Schema e migrations do Prisma, o conector e os repositories, únicos que falam com o banco. |
+
+### Camadas do backend
+
+Uma requisição de sync atravessa as camadas assim:
+
+```
+routes/          "chegou um pedido; as datas vieram certas?"  (senão: 400)
+  ▼
+use-cases/       "sincronizar" = buscar → aplicar regras → gravar → registrar
+  ├─▶ integrations/evo   busca e converte as vendas
+  ├─▶ domain/            decide o que é válido (repetidas, item de outra venda)
+  └─▶ database/          grava vendas, itens e a coleta
+```
+
+- **Cada camada só conhece a de baixo.** O `routes/` não sabe de EVO; o use-case não sabe de HTTP.
+- **Injeção de dependência:** o use-case recebe por parâmetro quem busca e quem grava, e o
+  `dependencias.ts` liga as peças reais. Por isso dá para testar o use-case com peças falsas em
+  memória, sem banco nem EVO, e trocar a fonte de vendas mexendo num lugar só.
+- **Erros:** a EVO lança `FonteIndisponivelError` (do domínio); o `routes/` traduz para 502 sem
+  conhecer a EVO.
 
 O `schema.prisma` fica em `src/database/` em vez do padrão `prisma/` na raiz, configurado no
 `prisma.config.ts` (Prisma 7), para tudo do banco ficar num lugar só. O cliente tipado é gerado
@@ -110,9 +142,9 @@ Resposta:   { "criadas": 12, "existentes": 340, "falhas": 0 }
 
 | Passo | Camada | O que acontece |
 | --- | --- | --- |
-| 1 | `sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`. |
-| 2 | `evo.client.ts` | Chama a EVO com `dateSaleStart` / `dateSaleEnd` e Basic Auth, paginando com `take/skip` até página vazia ou HTTP 204. |
-| 3 | `sync.service.ts` | Valida os registros: chaves inteiras, sem duplicatas, `idSale` do item igual ao da venda. |
+| 1 | `routes/sync.schema.ts` | Valida as datas: obrigatórias, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`. |
+| 2 | `integrations/evo/` | Chama a EVO com `dateSaleStart` / `dateSaleEnd` e Basic Auth, paginando com `take/skip` até página vazia ou HTTP 204, e converte cada venda (tipo errado ou campo obrigatório ausente vira falha). |
+| 3 | `domain/vendas.ts` | Regras: `idSale` do item igual ao da venda; repetida igual conta uma vez, repetida diferente vira falha. |
 | 4 | repositories | Grava numa transação, vendas e depois itens, com `createMany({ skipDuplicates: true })` (no Postgres, `ON CONFLICT DO NOTHING`). |
 | 5 | `coletas.repository.ts` | Registra o resultado em `coletas`. |
 
@@ -131,6 +163,29 @@ Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento
 | `iniciadaEm`, `finalizadaEm` | `timestamptz` | Quando começou e terminou (com fuso: é o relógio do servidor). |
 | `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
 | `erro` | `text` | Mensagem quando `status = erro`. |
+
+### Tabela `coleta_falhas`
+
+Hoje as vendas que falham no sync só aparecem no log do terminal e se perdem. Esta tabela guarda
+**só as vendas que deram errado**, ligadas à coleta que as gerou (cabeçalho / detalhe, como
+`vendas` → `itens_venda`). Serve para listar os IDs, entender o motivo e reprocessar.
+
+| Coluna | Tipo | O que guarda |
+| --- | --- | --- |
+| `id` | `serial` | Gerado pelo banco. |
+| `coletaId` | `integer`, FK → `coletas` | A coleta que gerou a falha (o período dela). Apagar a coleta apaga as falhas juntas. |
+| `idSale` | `integer` | A venda que falhou. É a unidade de reprocessamento: `GET /api/v2/sales/{idSale}` na EVO traz a venda com os itens. |
+| `idSaleItem` | `integer`, opcional | Qual item causou a falha, quando foi num item. Só detalhe. |
+| `motivo` | `text` curto | O primeiro campo com problema (ex.: `saleItens.1.itemValue: esperado número`) ou a regra que reprovou. |
+| `status` | `pendente` / `resolvida` | O reprocessamento marca `resolvida` em vez de apagar. |
+
+- **Por que a falha é da venda e não do item:** venda e itens são gravados juntos. Um item ruim
+  tira a venda inteira, e não existe "reprocessar só um item".
+- **`idSale` e `idSaleItem` em colunas separadas:** são numerações diferentes (a venda 100 e o
+  item 100 não têm relação); misturar numa coluna só deixaria o ID ambíguo.
+- **`idSale` nulo:** só quando o defeito é o próprio `idSale`; essa falha se reprocessa pelo
+  período da coleta.
+- **Em aberto:** reprocessamento e limpeza das falhas antigas (ver [`todo.md`](todo.md)).
 
 ## Banco de dados
 

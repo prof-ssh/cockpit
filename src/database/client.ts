@@ -12,12 +12,16 @@ function createClient() {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
 
-// Em desenvolvimento o Next recarrega os módulos a cada alteração; guardar a
-// instância no globalThis evita abrir uma conexão nova a cada recarga.
+// Criado só no primeiro uso, não ao importar: no build da imagem não há DATABASE_URL.
+// Guardar no globalThis evita abrir uma conexão nova a cada recarga do `next dev`.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma = globalForPrisma.prisma ?? createClient();
+export function db(): PrismaClient {
+  globalForPrisma.prisma ??= createClient();
+  return globalForPrisma.prisma;
+}
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+/** Confere se o banco responde (usado pelo GET /api/health). */
+export async function verificarConexao(): Promise<void> {
+  await db().$queryRaw`select 1`;
 }

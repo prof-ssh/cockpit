@@ -20,6 +20,33 @@ services:
       timeout: 3s
       retries: 10
 
+  # Aplica as migrations pendentes e termina. O app só sobe depois dele.
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    environment:
+      # dentro do compose o banco é o host `db`, não localhost
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # sem valor aqui o app recusa subir e diz o que falta (src/backend/config/env.ts)
+      EVO_BASE_URL: ${EVO_BASE_URL:-}
+      EVO_USERNAME: ${EVO_USERNAME:-}
+      EVO_PASSWORD: ${EVO_PASSWORD:-}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   db-data:
     name: cockpit-db  # nome fixo do volume (docker volume ls)

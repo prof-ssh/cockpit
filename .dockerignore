@@ -1,0 +1,8 @@
+.git
+.next
+node_modules
+src/database/generated
+.env
+docs
+Dockerfile
+docker-compose.yml

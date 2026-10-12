@@ -19,20 +19,20 @@ preparo das máquinas em [`setup.md`](setup.md).
 - [x] 2.1 Instalar o Prisma em `src/database/` (`DATABASE_URL` no `.env`) e criar o conector `client.ts`.
 - [x] 2.2 Definir os tipos SQL dos campos a partir do JSON que a API EVO devolve.
 - [x] 2.3 Modelar no `schema.prisma`: `vendas` (PK `idSale`), `itens_venda` (PK `idSaleItem`, FK `idSale`) e `coletas`.
-- [ ] 2.4 Gerar a primeira migration (`prisma migrate dev`) e aplicar no container.
+- [x] 2.4 Gerar a primeira migration (`prisma migrate dev`) e aplicar no container.
 - [x] 2.5 Configurar o volume e testar que os dados sobrevivem a `docker compose down` / `up`.
-- [ ] 2.6 Criar os repositories de `vendas` (vendas e itens, com `createMany({ skipDuplicates: true })`) e `coletas`.
+- [x] 2.6 Criar os repositories de `vendas` (vendas e itens, com `createMany({ skipDuplicates: true })`) e `coletas`.
 
 ## Etapa 3 — Montar o backend (rotas de API do Next)
 
-- [ ] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
-- [ ] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
-- [ ] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
-- [ ] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
-- [ ] 3.5 `sync.service.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
+- [x] 3.1 `Dockerfile` do app no compose e `config/env.ts` validando o `.env`.
+- [x] 3.2 Rota `GET /api/health`, testando a conexão com o banco.
+- [x] 3.3 `evo.client.ts`: Basic Auth, `dateSaleStart` / `dateSaleEnd`, paginação `take/skip`.
+- [x] 3.4 `sync.schema.ts` (Zod): `periodoInicio` e `periodoFim` obrigatórios, `AAAA-MM-DD`, `periodoInicio` não depois de `periodoFim`.
+- [x] 3.5 Use-case `sincronizar-vendas.ts`: orquestra EVO → validação dos registros → repositories (vendas → itens numa
       transação) e registra em `coletas`.
-- [ ] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
-- [ ] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
+- [x] 3.6 Rota `POST /api/sync`, respondendo `{ criadas, existentes, falhas }`.
+- [x] 3.7 Conferir um período conhecido: as quantidades no banco batem com as da EVO.
 - [ ] 3.8 Rotas de leitura para o cockpit (depende da 4.1).
 
 ## Etapa 4 — Montar o front (páginas do Next)

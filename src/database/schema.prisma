@@ -99,11 +99,37 @@ model Coleta {
   falhas        Int          @default(0)
   erro          String?
 
+  coletaFalhas ColetaFalha[]
+
   @@map("coletas")
+}
+
+/// Uma venda que falhou num sync, para investigar e reprocessar.
+/// A falha é sempre da venda (unidade de reprocessamento); o item é só detalhe.
+model ColetaFalha {
+  id          Int         @id @default(autoincrement())
+  coletaId    Int
+  idSale      Int? // nulo só quando o defeito é o próprio idSale
+  idSaleItem  Int? // qual item causou, quando foi num item
+  motivo      String
+  status      StatusFalha @default(pendente)
+  criadaEm    DateTime    @default(now()) @db.Timestamptz(0)
+  resolvidaEm DateTime?   @db.Timestamptz(0)
+
+  coleta Coleta @relation(fields: [coletaId], references: [id], onDelete: Cascade)
+
+  @@index([coletaId])
+  @@index([idSale])
+  @@map("coleta_falhas")
 }
 
 enum StatusColeta {
   em_andamento
   sucesso
   erro
+}
+
+enum StatusFalha {
+  pendente
+  resolvida
 }

@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:up": "docker compose up -d --wait db && prisma migrate deploy",
+    "predev": "npm run db:up",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
@@ -15,9 +18,11 @@
     "next": "16.4.0",
     "pg": "8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^20",
     "@types/pg": "8.23.1",
     "@types/react": "^19",
@@ -26,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "prisma": "7.10.0",
+    "tailwindcss": "4.3.3",
     "typescript": "^5"
   }
 }
