@@ -1,0 +1,1013 @@
+<title>Cockpit Playground</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
+
+<style type="text/tailwindcss">
+/* Tema shadcn/ui com as cores do The Senses.
+   Os nomes das variáveis são os do shadcn: no projeto, isto vai para o tokens.css. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) { @slot; }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) { @slot; }
+  }
+}
+
+:root {
+  --radius: 0.25rem;
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #44bbca;              /* Tiffany */
+  --primary-foreground: #000000;
+  --secondary: #f3f6f7;
+  --secondary-foreground: #000000;
+  --muted: #f3f6f7;
+  --muted-foreground: #5c6567;
+  --accent: #e3f5f7;               /* Tiffany suave */
+  --accent-foreground: #000000;
+  --destructive: #c62828;          /* proposta: a marca não tem cor de erro */
+  --destructive-foreground: #ffffff;
+  --border: #d6dcde;
+  --input: #5c6567;
+  --ring: #1b7884;
+  --chart-1: #44bbca;
+  --chart-2: #000000;
+  --chart-3: #5c6567;
+  --chart-4: #c9d1d3;
+  --chart-5: #1b7884;
+  --font-family-display: "Mustica Pro", system-ui, sans-serif;
+  --font-family-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0d0f10; --foreground: #ffffff;
+    --card: #0d0f10; --card-foreground: #ffffff;
+    --popover: #181b1c; --popover-foreground: #ffffff;
+    --secondary: #181b1c; --secondary-foreground: #ffffff;
+    --muted: #181b1c; --muted-foreground: #a2abae;
+    --accent: #163b40; --accent-foreground: #ffffff;
+    --destructive: #ff8a80; --destructive-foreground: #000000;
+    --border: #2e3436; --input: #a2abae; --ring: #44bbca;
+    --chart-2: #ffffff; --chart-3: #a2abae; --chart-4: #3d4447; --chart-5: #8fdbe4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --background: #0d0f10; --foreground: #ffffff;
+  --card: #0d0f10; --card-foreground: #ffffff;
+  --popover: #181b1c; --popover-foreground: #ffffff;
+  --secondary: #181b1c; --secondary-foreground: #ffffff;
+  --muted: #181b1c; --muted-foreground: #a2abae;
+  --accent: #163b40; --accent-foreground: #ffffff;
+  --destructive: #ff8a80; --destructive-foreground: #000000;
+  --border: #2e3436; --input: #a2abae; --ring: #44bbca;
+  --chart-2: #ffffff; --chart-3: #a2abae; --chart-4: #3d4447; --chart-5: #8fdbe4;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-display: var(--font-family-display);
+  --font-sans: var(--font-family-body);
+}
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html, body { background: var(--background); color: var(--foreground); }
+  body { font-family: var(--font-family-body); }
+  h1, h2, h3 { text-wrap: balance; }
+}
+.tnum { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useId, useEffect, useMemo } = React;
+
+/* ================= utilitários (no projeto: lib/utils.ts com clsx + tailwind-merge) ================= */
+// Versão simplificada do cn(): junta as classes e, em conflito óbvio, a última vence.
+function cn(...args) {
+  const list = args.flat().filter(Boolean).join(" ").split(/\s+/).filter(Boolean);
+  const key = (c) => {
+    const parts = c.split(":"); const base = parts.pop(); const pre = parts.join(":");
+    const m = base.match(/^(bg|rounded|shadow|gap|h|w|px|py|p|border-l|justify|items)(-|$)/);
+    if (!m) return null;
+    if (m[1] === "bg" && /^bg-(clip|origin|repeat|no-repeat|fixed|cover|contain)/.test(base)) return null;
+    return pre + "|" + m[1];
+  };
+  const seen = new Map();
+  list.forEach((c, i) => { const k = key(c); if (k) seen.set(k, i); });
+  return list.filter((c, i) => { const k = key(c); return !k || seen.get(k) === i; }).join(" ");
+}
+
+/* ================= componentes shadcn/ui (classes do shadcn, tema The Senses) =================
+   Ajustes da marca: sem sombras (shadow-xs/shadow-sm removidas), Card com rounded-lg (4px). */
+
+const buttonVariants = {
+  base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
+  variant: {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20",
+    outline: "border bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+    link: "text-primary underline-offset-4 hover:underline",
+  },
+  size: {
+    default: "h-9 px-4 py-2 has-[>svg]:px-3",
+    sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+    lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+    icon: "size-9",
+  },
+};
+function Button({ className, variant = "default", size = "default", type = "button", ...props }) {
+  return <button data-slot="button" type={type} className={cn(buttonVariants.base, buttonVariants.variant[variant], buttonVariants.size[size], className)} {...props} />;
+}
+
+const badgeVariants = {
+  base: "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] overflow-hidden",
+  variant: {
+    default: "border-transparent bg-primary text-primary-foreground",
+    secondary: "border-transparent bg-secondary text-secondary-foreground",
+    destructive: "border-transparent bg-destructive text-destructive-foreground",
+    outline: "text-foreground border-input",
+  },
+};
+function Badge({ className, variant = "default", ...props }) {
+  return <span data-slot="badge" className={cn(badgeVariants.base, badgeVariants.variant[variant], className)} {...props} />;
+}
+
+function Card({ className, ...props }) {
+  return <div data-slot="card" className={cn("bg-card text-card-foreground flex flex-col gap-6 rounded-lg border py-6", className)} {...props} />;
+}
+function CardHeader({ className, ...props }) {
+  return <div data-slot="card-header" className={cn("@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6", className)} {...props} />;
+}
+function CardTitle({ className, ...props }) {
+  return <div data-slot="card-title" className={cn("font-display leading-none font-semibold", className)} {...props} />;
+}
+function CardDescription({ className, ...props }) {
+  return <div data-slot="card-description" className={cn("text-muted-foreground text-sm", className)} {...props} />;
+}
+function CardAction({ className, ...props }) {
+  return <div data-slot="card-action" className={cn("col-start-2 row-span-2 row-start-1 self-start justify-self-end", className)} {...props} />;
+}
+function CardContent({ className, ...props }) {
+  return <div data-slot="card-content" className={cn("px-6", className)} {...props} />;
+}
+function CardFooter({ className, ...props }) {
+  return <div data-slot="card-footer" className={cn("flex items-center px-6 [.border-t]:pt-6", className)} {...props} />;
+}
+
+function Label({ className, ...props }) {
+  return <label data-slot="label" className={cn("flex items-center gap-2 text-sm leading-none font-medium select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50", className)} {...props} />;
+}
+function Input({ className, type, ...props }) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function Separator({ className, orientation = "horizontal", ...props }) {
+  return <div role="separator" data-slot="separator" data-orientation={orientation} className={cn("bg-border shrink-0", orientation === "horizontal" ? "h-px w-full" : "h-full w-px", className)} {...props} />;
+}
+
+function Checkbox({ checked, onCheckedChange, id, className, ...props }) {
+  return (
+    <button
+      type="button" role="checkbox" id={id} aria-checked={checked} data-state={checked ? "checked" : "unchecked"}
+      onClick={() => onCheckedChange?.(!checked)}
+      data-slot="checkbox"
+      className={cn("peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 size-4 shrink-0 rounded-[4px] border transition-shadow outline-none focus-visible:ring-[3px] inline-flex items-center justify-center", className)}
+      {...props}
+    >
+      {checked && <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>}
+    </button>
+  );
+}
+
+// Tabs (no projeto vem do Radix; aqui o comportamento é simulado)
+function Tabs({ value, onValueChange, className, children }) {
+  return <div data-slot="tabs" className={cn("flex flex-col gap-2", className)}>{React.Children.map(children, (c) => React.cloneElement(c, { value, onValueChange }))}</div>;
+}
+function TabsList({ className, children, value, onValueChange }) {
+  return (
+    <div role="tablist" data-slot="tabs-list" className={cn("bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]", className)}>
+      {React.Children.map(children, (c) => React.cloneElement(c, { current: value, onValueChange }))}
+    </div>
+  );
+}
+function TabsTrigger({ className, value, current, onValueChange, children }) {
+  const active = value === current;
+  return (
+    <button
+      type="button" role="tab" aria-selected={active} data-state={active ? "active" : "inactive"} data-slot="tabs-trigger"
+      onClick={() => onValueChange(value)}
+      className={cn("data-[state=active]:bg-background dark:data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 text-foreground dark:text-muted-foreground inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50", className)}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Toggle Group, variante outline (no projeto vem do Radix)
+function ToggleGroup({ value, onValueChange, options, size = "sm", className, label }) {
+  return (
+    <div role="radiogroup" aria-label={label} data-slot="toggle-group" data-variant="outline" className={cn("group/toggle-group flex w-fit items-center rounded-md", className)}>
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <button
+            key={o.value} type="button" role="radio" aria-checked={on} data-state={on ? "on" : "off"} data-variant="outline" data-slot="toggle-group-item"
+            onClick={() => onValueChange(o.value)}
+            className={cn(
+              "inline-flex items-center justify-center gap-2 text-sm font-medium hover:bg-muted hover:text-muted-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] whitespace-nowrap tnum",
+              "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+              size === "sm" ? "h-8 px-2.5 min-w-8" : "h-9 px-3 min-w-9",
+              "min-w-0 flex-1 shrink-0 rounded-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 border-l-0 first:border-l"
+            )}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Tooltip (no projeto vem do Radix). Abre com mouse, foco ou toque.
+function Tooltip({ content, children }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <span className="relative inline-flex" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      {React.cloneElement(children, {
+        "aria-describedby": open ? id : undefined,
+        onFocus: () => setOpen(true),
+        onBlur: () => setOpen(false),
+        onClick: () => setOpen((o) => !o),
+        onKeyDown: (e) => { if (e.key === "Escape") setOpen(false); },
+      })}
+      {open && (
+        <span role="tooltip" id={id} data-slot="tooltip-content"
+          className="bg-foreground text-background absolute left-1/2 top-full z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-md px-3 py-2 text-xs leading-relaxed text-left font-normal shadow-md">
+          {content}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function Campo({ children }) {
+  return <code className="rounded-sm bg-background/20 px-1 font-mono text-[11px]">{children}</code>;
+}
+
+// Filtro facetado do data table do shadcn (Popover + Command no projeto).
+function FiltroFacetado({ titulo, opcoes, selecionados, onChange }) {
+  const [aberto, setAberto] = useState(false);
+  const ref = React.useRef(null);
+  useEffect(() => {
+    if (!aberto) return;
+    const fora = (e) => { if (ref.current && !ref.current.contains(e.target)) setAberto(false); };
+    const esc = (e) => { if (e.key === "Escape") setAberto(false); };
+    document.addEventListener("mousedown", fora);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("keydown", esc); };
+  }, [aberto]);
+  const alternar = (v) => onChange(selecionados.includes(v) ? selecionados.filter((x) => x !== v) : [...selecionados, v]);
+  return (
+    <div className="relative" ref={ref}>
+      <Button variant="outline" size="sm" className="h-8 border-dashed" aria-expanded={aberto} onClick={() => setAberto((a) => !a)}>
+        <PlusCircle />
+        {titulo}
+        {selecionados.length > 0 && (
+          <>
+            <Separator orientation="vertical" className="mx-1 h-4" />
+            {selecionados.map((v) => (
+              <Badge key={v} variant="secondary" className="rounded-sm px-1 font-normal">{opcoes.find((o) => o.value === v)?.label}</Badge>
+            ))}
+          </>
+        )}
+      </Button>
+      {aberto && (
+        <div role="listbox" aria-multiselectable="true" className="bg-popover text-popover-foreground absolute left-0 top-full z-50 mt-1 w-52 rounded-md border p-1 shadow-md">
+          {opcoes.map((o) => {
+            const on = selecionados.includes(o.value);
+            return (
+              <button key={o.value} type="button" role="option" aria-selected={on} onClick={() => alternar(o.value)}
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent focus-visible:bg-accent">
+                <span className={cn("flex size-4 items-center justify-center rounded-[4px] border border-input", on ? "bg-primary border-primary text-primary-foreground" : "")}>
+                  {on && <Check className="size-3" />}
+                </span>
+                <span>{o.label}</span>
+                <span className="ml-auto text-xs text-muted-foreground tnum">{o.count}</span>
+              </button>
+            );
+          })}
+          {selecionados.length > 0 && (
+            <>
+              <Separator className="my-1" />
+              <button type="button" onClick={() => onChange([])} className="w-full rounded-sm px-2 py-1.5 text-center text-sm hover:bg-accent">Limpar filtro</button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Table({ className, ...props }) {
+  return <div data-slot="table-container" className="relative w-full overflow-x-auto"><table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} /></div>;
+}
+const TableHeader = ({ className, ...p }) => <thead data-slot="table-header" className={cn("[&_tr]:border-b", className)} {...p} />;
+const TableBody = ({ className, ...p }) => <tbody data-slot="table-body" className={cn("[&_tr:last-child]:border-0", className)} {...p} />;
+const TableRow = ({ className, ...p }) => <tr data-slot="table-row" className={cn("hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors", className)} {...p} />;
+const TableHead = ({ className, ...p }) => <th data-slot="table-head" className={cn("text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap", className)} {...p} />;
+const TableCell = ({ className, ...p }) => <td data-slot="table-cell" className={cn("p-2 align-middle whitespace-nowrap", className)} {...p} />;
+
+/* ================= ícones (no projeto: lucide-react) ================= */
+const Icon = ({ d, className }) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{d}</svg>;
+const ArrowUp = (p) => <Icon {...p} d={<><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></>} />;
+const ArrowDown = (p) => <Icon {...p} d={<><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></>} />;
+const Minus = (p) => <Icon {...p} d={<path d="M5 12h14" />} />;
+const RefreshCw = (p) => <Icon {...p} d={<><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></>} />;
+const Sun = (p) => <Icon {...p} d={<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></>} />;
+const Moon = (p) => <Icon {...p} d={<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />} />;
+const Monitor = (p) => <Icon {...p} d={<><rect width="20" height="14" x="2" y="3" rx="2" /><path d="M8 21h8M12 17v4" /></>} />;
+const Download = (p) => <Icon {...p} d={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /><path d="M12 15V3" /></>} />;
+const Info = (p) => <Icon {...p} d={<><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></>} />;
+const PlusCircle = (p) => <Icon {...p} d={<><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></>} />;
+const Check = (p) => <Icon {...p} d={<path d="M20 6 9 17l-5-5" />} />;
+const Copy = (p) => <Icon {...p} d={<><rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></>} />;
+
+/* ================= dados de exemplo (inventados) ================= */
+const MESES = ["nov/25", "dez/25", "jan/26", "fev/26", "mar/26", "abr/26", "mai/26", "jun/26", "jul/26", "ago/26", "set/26", "out/26"];
+const HOJE = { dia: 12, diasNoMes: 31 };
+const TIPOS = [
+  { key: "nova", nome: "Nova venda", cor: "var(--chart-1)" },
+  { key: "renov", nome: "Renovação", cor: "var(--chart-2)" },
+  { key: "remat", nome: "Rematrícula", cor: "var(--chart-3)" },
+  { key: "outras", nome: "Outras vendas", cor: "var(--chart-4)" },
+];
+const ENTRADAS = {
+  nova:   [38, 30, 62, 55, 48, 41, 39, 35, 44, 47, 42, 17],
+  renov:  [52, 49, 58, 55, 57, 54, 56, 53, 58, 60, 59, 24],
+  remat:  [9, 7, 14, 12, 11, 10, 9, 8, 10, 11, 10, 4],
+  outras: [6, 8, 5, 4, 6, 5, 7, 5, 6, 6, 5, 2],
+};
+const VENCIDOS = [78, 74, 86, 80, 79, 77, 76, 72, 80, 83, 81, 74];
+const SAIRAM =   [17, 18, 14, 13, 11, 13, 11, 11, 12, 12, null, null];
+const JANELAS = { 30: { total: 71, recorrentes: 44 }, 60: { total: 148, recorrentes: 93 }, 90: { total: 219, recorrentes: 138 } };
+const REALIZADO = {
+  30: { entradas: [118, 109], saidas: [14, 12], vencidos: [83, 80] },
+  60: { entradas: [229, 213], saidas: [22, 24], vencidos: [163, 152] },
+  90: { entradas: [341, 318], saidas: [35, 37], vencidos: [235, 228] },
+};
+const A_VENCER = [
+  { nome: "Juliana Alves", plano: "Plano anual", vence: "15/10", dias: 3, rec: false },
+  { nome: "Marcos Vieira", plano: "Plano mensal", vence: "16/10", dias: 4, rec: true },
+  { nome: "Pedro Henrique Souza", plano: "Pilates 2x semana", vence: "18/10", dias: 6, rec: false },
+  { nome: "Camila Rocha", plano: "Plano semestral", vence: "21/10", dias: 9, rec: false },
+  { nome: "Lucas Ferreira", plano: "Plano anual", vence: "24/10", dias: 12, rec: false },
+  { nome: "Ana Beatriz Nunes", plano: "Yoga + spa", vence: "29/10", dias: 17, rec: false },
+  { nome: "Fernanda Lopes", plano: "Plano mensal", vence: "02/11", dias: 21, rec: true },
+  { nome: "Gustavo Ramos", plano: "Plano semestral", vence: "19/11", dias: 38, rec: false },
+  { nome: "Patrícia Mendes", plano: "Pilates 3x semana", vence: "27/11", dias: 46, rec: false },
+  { nome: "Rodrigo Teixeira", plano: "Plano anual", vence: "08/12", dias: 57, rec: false },
+  { nome: "Beatriz Cardoso", plano: "Plano trimestral", vence: "22/12", dias: 71, rec: false },
+  { nome: "Thiago Moreira", plano: "Plano anual", vence: "05/01", dias: 85, rec: false },
+];
+const VENDAS = [
+  { id: 48213, data: "12/10 09:14", cliente: "Mariana Costa", item: "Plano anual", tipo: "Nova venda", valor: 2988.0, status: "Sincronizada" },
+  { id: 48212, data: "12/10 08:52", cliente: "Rafael Lima", item: "Pilates 2x semana", tipo: "Renovação", valor: 420.0, status: "Sincronizada" },
+  { id: 48209, data: "11/10 19:30", cliente: "Juliana Alves", item: "Avaliação física", tipo: "Outras vendas", valor: 120.0, status: "Falhou" },
+  { id: 48207, data: "11/10 17:05", cliente: "Bruno Martins", item: "Plano mensal", tipo: "Rematrícula", valor: 289.0, status: "Sincronizada" },
+  { id: 48204, data: "11/10 10:41", cliente: "Camila Rocha", item: "Day spa", tipo: "Outras vendas", valor: 350.0, status: "Pendente" },
+];
+
+const ultimo = MESES.length - 1;
+const totalMes = (i) => TIPOS.reduce((s, t) => s + ENTRADAS[t.key][i], 0);
+const media = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length;
+const pct = (n) => `${(n * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+const num = (n) => Math.round(n).toLocaleString("pt-BR");
+const brl = (n) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fechados = [...Array(ultimo).keys()];
+const churnFechado = SAIRAM.map((s, i) => (s == null ? null : s / VENCIDOS[i]));
+const churnIdx = churnFechado.map((c, i) => (c == null ? null : i)).filter((i) => i != null);
+const mediaEntradas = media(fechados.slice(-6).map(totalMes));
+const mediaChurn = media(churnIdx.slice(-6).map((i) => churnFechado[i]));
+const PERIODOS = [{ value: 30, label: "30 dias" }, { value: 60, label: "60 dias" }, { value: 90, label: "90 dias" }];
+
+function niceMax(v) {
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+
+/* ================= peças de gráfico (no projeto: shadcn Chart, sobre Recharts) ================= */
+function ChartLegend({ itens }) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
+      {itens.map((i) => (
+        <div key={i.nome} className="flex items-center gap-1.5">
+          <div className="h-2 w-2 shrink-0 rounded-[2px]" style={{ backgroundColor: i.cor }} />
+          {i.nome}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GraficoEntradas({ sel, setSel }) {
+  const W = 720, H = 250, L = 36, R = 8, T = 8, B = 26;
+  const max = niceMax(Math.max(...fechados.map(totalMes)) * 1.05);
+  const y = (v) => T + (H - T - B) * (1 - v / max);
+  const step = (W - L - R) / MESES.length;
+  const bw = step * 0.62;
+  const x = (i) => L + step * i + (step - bw) / 2;
+  const mm = fechados.map((i) => (i < 2 ? null : media([totalMes(i), totalMes(i - 1), totalMes(i - 2)])));
+  const pts = mm.map((v, i) => (v == null ? null : `${x(i) + bw / 2},${y(v)}`)).filter(Boolean).join(" ");
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto text-xs" role="img" aria-label="Entradas por mês e tipo">
+      {[0, 0.25, 0.5, 0.75, 1].map((f) => f * max).map((t) => (
+        <g key={t}>
+          <line x1={L} x2={W - R} y1={y(t)} y2={y(t)} style={{ stroke: "var(--border)" }} strokeDasharray={t ? "3 3" : undefined} />
+          <text x={L - 8} y={y(t) + 4} textAnchor="end" fontSize="11" style={{ fill: "var(--muted-foreground)" }} className="tnum">{num(t)}</text>
+        </g>
+      ))}
+      {MESES.map((m, i) => {
+        let acc = 0;
+        return (
+          <g key={m} onMouseEnter={() => setSel(i)} onClick={() => setSel(i)} style={{ cursor: "pointer" }}>
+            <rect x={L + step * i} y={T} width={step} height={H - T - B} style={{ fill: sel === i ? "var(--muted)" : "transparent" }} />
+            {TIPOS.map((t, k) => {
+              const v = ENTRADAS[t.key][i];
+              const top = k === TIPOS.length - 1;
+              const r = <rect key={t.key} x={x(i)} y={y(acc + v)} width={bw} height={y(acc) - y(acc + v)} rx={top ? 2 : 0} style={{ fill: t.cor, opacity: i === ultimo ? 0.55 : 1 }} />;
+              acc += v;
+              return r;
+            })}
+            <text x={x(i) + bw / 2} y={H - 8} textAnchor="middle" fontSize="11" style={{ fill: sel === i ? "var(--foreground)" : "var(--muted-foreground)" }}>{m.slice(0, 3)}</text>
+          </g>
+        );
+      })}
+      <polyline points={pts} style={{ fill: "none", stroke: "var(--chart-5)" }} strokeWidth="2" />
+    </svg>
+  );
+}
+
+function GraficoChurn({ sel, setSel }) {
+  const W = 720, H = 210, L = 36, R = 8, T = 8, B = 26;
+  const max = 0.25;
+  const y = (v) => T + (H - T - B) * (1 - v / max);
+  const step = (W - L - R) / MESES.length;
+  const bw = step * 0.62;
+  const x = (i) => L + step * i + (step - bw) / 2;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Churn por vencimento por mês">
+      <defs>
+        <pattern id="hachura" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="6" style={{ stroke: "var(--chart-3)" }} strokeWidth="2" />
+        </pattern>
+      </defs>
+      {[0, 0.05, 0.1, 0.15, 0.2, 0.25].map((t) => (
+        <g key={t}>
+          <line x1={L} x2={W - R} y1={y(t)} y2={y(t)} style={{ stroke: "var(--border)" }} strokeDasharray={t ? "3 3" : undefined} />
+          <text x={L - 8} y={y(t) + 4} textAnchor="end" fontSize="11" style={{ fill: "var(--muted-foreground)" }}>{Math.round(t * 100)}%</text>
+        </g>
+      ))}
+      {MESES.map((m, i) => {
+        const c = churnFechado[i];
+        return (
+          <g key={m} onMouseEnter={() => setSel(i)} onClick={() => setSel(i)} style={{ cursor: "pointer" }}>
+            <rect x={L + step * i} y={T} width={step} height={H - T - B} style={{ fill: sel === i ? "var(--muted)" : "transparent" }} />
+            {c == null
+              ? <rect x={x(i)} y={y(0.2)} width={bw} height={y(0) - y(0.2)} style={{ fill: "url(#hachura)" }} opacity="0.5" />
+              : <rect x={x(i)} y={y(c)} width={bw} height={y(0) - y(c)} rx="2" style={{ fill: "var(--chart-2)" }} />}
+            <text x={x(i) + bw / 2} y={H - 8} textAnchor="middle" fontSize="11" style={{ fill: sel === i ? "var(--foreground)" : "var(--muted-foreground)" }}>{m.slice(0, 3)}</text>
+          </g>
+        );
+      })}
+      <line x1={L} x2={W - R} y1={y(mediaChurn)} y2={y(mediaChurn)} style={{ stroke: "var(--chart-1)" }} strokeWidth="2" strokeDasharray="6 4" />
+      <text x={W - R} y={y(mediaChurn) - 6} textAnchor="end" fontSize="11" style={{ fill: "var(--foreground)" }}>média 6 meses {pct(mediaChurn)}</text>
+    </svg>
+  );
+}
+
+/* ================= peças das telas ================= */
+/** Variação contra o período anterior. A seta mostra a direção; a cor e a palavra mostram se foi bom ou ruim.
+    melhor="maior": subir é bom (entradas, saldo). melhor="menor": cair é bom (saídas, churn). */
+function Variacao({ atual, anterior, rotulo, formato = "num", melhor = "maior" }) {
+  const dif = formato === "pct" ? (atual - anterior) * 100 : anterior ? ((atual - anterior) / anterior) * 100 : 0;
+  const dir = Math.abs(dif) < 0.05 ? "flat" : dif > 0 ? "up" : "down";
+  const bom = dir === "flat" ? null : (dir === "up") === (melhor === "maior");
+  const Seta = dir === "up" ? ArrowUp : dir === "down" ? ArrowDown : Minus;
+  const txt = `${Math.abs(dif).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}${formato === "pct" ? " p.p." : "%"}`;
+  const estilo = bom == null
+    ? "border-input text-foreground"
+    : bom ? "border-transparent bg-primary text-primary-foreground" : "border-transparent bg-destructive text-destructive-foreground";
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground tnum">
+      <Badge variant="outline" className={estilo}>
+        <Seta />{dir === "flat" ? "Igual" : txt}
+      </Badge>
+      <span>{rotulo}</span>
+    </div>
+  );
+}
+
+/** Variação compacta para listas: seta + %, na cor de bom (Tiffany escuro) ou ruim (vermelho). */
+function VariacaoMini({ atual, anterior, melhor = "maior", formato = "num" }) {
+  const dif = formato === "pct" ? (atual - anterior) * 100 : anterior ? ((atual - anterior) / anterior) * 100 : 0;
+  const dir = Math.abs(dif) < 0.05 ? "flat" : dif > 0 ? "up" : "down";
+  const bom = dir === "flat" ? null : (dir === "up") === (melhor === "maior");
+  const Seta = dir === "up" ? ArrowUp : dir === "down" ? ArrowDown : Minus;
+  return (
+    <span className={cn("inline-flex items-center gap-0.5 text-xs font-medium tnum", bom == null ? "text-muted-foreground" : bom ? "text-chart-5" : "text-destructive")}>
+      <Seta className="size-3" />{dir === "flat" ? "0%" : `${Math.abs(dif).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}${formato === "pct" ? " p.p." : "%"}`}
+    </span>
+  );
+}
+
+function Metrica({ rotulo, valor, seta, info, children }) {
+  const S = seta === "up" ? ArrowUp : seta === "down" ? ArrowDown : null;
+  return (
+    <div className="flex flex-col gap-2 min-w-0">
+      <span className="text-sm text-muted-foreground inline-flex items-center gap-1.5">
+        {rotulo}
+        {info && (
+          <Tooltip content={info}>
+            <button type="button" aria-label={`Como calculamos: ${rotulo}`} className="inline-flex rounded-full text-muted-foreground hover:text-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px]">
+              <Info className="size-4" />
+            </button>
+          </Tooltip>
+        )}
+      </span>
+      <span className="font-display text-3xl font-semibold tnum inline-flex items-center gap-2">{S && <S className="size-6" />}{valor}</span>
+      {children}
+    </div>
+  );
+}
+
+function BarraSync() {
+  const [ultimoSync, setUltimoSync] = useState({ quando: "10/10 às 18:05", ate: "2026-10-10" });
+  const [inicio, setInicio] = useState("2026-10-11");
+  const [fim, setFim] = useState("2026-10-12");
+  const [estado, setEstado] = useState("parado"); // parado | rodando | ok
+  const erroData = fim < inicio;
+  const dataBR = (iso) => iso.split("-").reverse().slice(0, 2).join("/");
+  function sincronizar(e) {
+    e.preventDefault();
+    if (erroData) return;
+    setEstado("rodando");
+    setTimeout(() => { setEstado("ok"); setUltimoSync({ quando: "hoje às 19:24", ate: fim }); }, 1600);
+  }
+  return (
+    <Card className="py-4">
+      <CardContent className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-1 min-w-0">
+          <h2 className="font-display text-lg font-semibold leading-tight">Sincronizar dados</h2>
+          <p className="text-sm text-muted-foreground tnum">
+            Último sync {ultimoSync.quando}, com vendas até {dataBR(ultimoSync.ate)}.
+          </p>
+          {estado === "ok" && <p className="text-sm tnum">23 vendas novas e nenhuma falha (simulado).</p>}
+        </div>
+        <form onSubmit={sincronizar} className="flex flex-wrap items-end gap-3">
+          <div className="grid gap-1.5 w-40">
+            <Label htmlFor="sync-de" className="text-xs text-muted-foreground">De</Label>
+            <Input id="sync-de" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+          </div>
+          <div className="grid gap-1.5 w-40">
+            <Label htmlFor="sync-ate" className="text-xs text-muted-foreground">Até</Label>
+            <Input id="sync-ate" type="date" value={fim} aria-invalid={erroData || undefined} onChange={(e) => setFim(e.target.value)} />
+          </div>
+          <Button type="submit" disabled={estado === "rodando" || erroData}>
+            <RefreshCw className={estado === "rodando" ? "animate-spin" : ""} />
+            {estado === "rodando" ? "Sincronizando…" : "Sincronizar"}
+          </Button>
+        </form>
+      </CardContent>
+      {erroData && <CardContent><p className="text-destructive text-sm">A data final precisa ser depois da inicial.</p></CardContent>}
+    </Card>
+  );
+}
+
+/* ================= tela: KPIs ================= */
+function TelaKPIs() {
+  const [selE, setSelE] = useState(ultimo - 1);
+  const [selS, setSelS] = useState(churnIdx[churnIdx.length - 1]);
+  const [janReal, setJanReal] = useState(30);
+  const [janPrev, setJanPrev] = useState(30);
+  const [janSaidas, setJanSaidas] = useState(30);
+  const [filtroRec, setFiltroRec] = useState(["sem"]);
+  const entradasPrev = (d) => (mediaEntradas / 30.4) * d;
+  const saidasPrev = (d) => JANELAS[d].total * mediaChurn;
+  const r = REALIZADO[janReal];
+  const saldoPrev = entradasPrev(janPrev) - saidasPrev(janPrev);
+  const js = JANELAS[janSaidas];
+  const INFO = {
+    entradas: <>Vendas com <Campo>saleDate</Campo> nos últimos {janReal} dias, contando só itens de contrato (<Campo>idMembership</Campo> preenchido). Somamos todos os <Campo>registrationKind</Campo>: enrollment, re-enrollment, renewal e vazio. Comparação: a mesma conta nos {janReal} dias anteriores.</>,
+    saidas: <>Contratos cuja data de fim caiu no período e cuja janela de 45 dias já fechou, sem nova venda do mesmo <Campo>idMember</Campo> com <Campo>registrationKind</Campo> renewal ou re-enrollment. A data de fim vem dos contratos da EVO, que ainda não sincronizamos.</>,
+    saldo: <>Entradas − saídas do período, as duas contas acima.</>,
+    churn: <>Saídas ÷ contratos que venceram no período (data de fim do contrato). Só entram contratos com a janela de 45 dias fechada. A variação é em pontos percentuais.</>,
+    entradasPrev: <>Média mensal das vendas (<Campo>saleDate</Campo>, itens com <Campo>idMembership</Campo>) nos últimos 6 meses fechados ÷ 30,4 × {janPrev} dias. Hoje: {num(mediaEntradas)} por mês. A etiqueta compara com o realizado dos últimos {janPrev} dias.</>,
+    saidasPrev: <>Contratos com data de fim nos próximos {janPrev} dias ({JANELAS[janPrev].total}) × churn médio dos últimos 6 meses fechados ({pct(mediaChurn)}). A data de fim vem dos contratos da EVO.</>,
+    saldoPrev: <>Entradas previstas − saídas previstas.</>,
+  };
+  const naJanela = A_VENCER.filter((c) => c.dias <= janSaidas);
+  const contagem = { com: naJanela.filter((c) => c.rec).length, sem: naJanela.filter((c) => !c.rec).length };
+  const lista = naJanela.filter((c) => filtroRec.length === 0 || filtroRec.includes(c.rec ? "com" : "sem"));
+
+  return (
+    <div className="flex flex-col gap-8">
+      <BarraSync />
+
+      <div className="flex flex-col gap-1">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Entradas e saídas</h1>
+        <p className="text-muted-foreground">Outubro de 2026, até o dia {HOJE.dia}. Números de exemplo.</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Realizado nos últimos {janReal} dias</CardTitle>
+          <CardDescription>Dados consolidados, comparados com os {janReal} dias anteriores.</CardDescription>
+          <CardAction><ToggleGroup label="Período do realizado" value={janReal} onValueChange={setJanReal} options={PERIODOS} /></CardAction>
+        </CardHeader>
+        <CardContent className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Metrica rotulo="Entradas" info={INFO.entradas} valor={num(r.entradas[0])}><Variacao atual={r.entradas[0]} anterior={r.entradas[1]} rotulo={`vs ${num(r.entradas[1])}`} /></Metrica>
+          <Metrica rotulo="Saídas" info={INFO.saidas} valor={num(r.saidas[0])}><Variacao melhor="menor" atual={r.saidas[0]} anterior={r.saidas[1]} rotulo={`vs ${num(r.saidas[1])}`} /></Metrica>
+          <Metrica rotulo="Saldo" info={INFO.saldo} valor={num(r.entradas[0] - r.saidas[0])}><Variacao atual={r.entradas[0] - r.saidas[0]} anterior={r.entradas[1] - r.saidas[1]} rotulo={`vs ${num(r.entradas[1] - r.saidas[1])}`} /></Metrica>
+          <Metrica rotulo="Churn por vencimento" info={INFO.churn} valor={pct(r.saidas[0] / r.vencidos[0])}><Variacao formato="pct" melhor="menor" atual={r.saidas[0] / r.vencidos[0]} anterior={r.saidas[1] / r.vencidos[1]} rotulo={`vs ${pct(r.saidas[1] / r.vencidos[1])}`} /></Metrica>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-muted border-dashed border-input">
+        <CardHeader>
+          <CardTitle>Previsão dos próximos {janPrev} dias</CardTitle>
+          <CardDescription>Média dos últimos 6 meses e contratos que vão vencer.</CardDescription>
+          <CardAction><ToggleGroup label="Período da previsão" value={janPrev} onValueChange={setJanPrev} options={PERIODOS} className="bg-background" /></CardAction>
+        </CardHeader>
+        <CardContent className="grid gap-6 grid-cols-1 sm:grid-cols-3">
+          <Metrica rotulo="Entradas previstas" info={INFO.entradasPrev} valor={num(entradasPrev(janPrev))}><Variacao atual={entradasPrev(janPrev)} anterior={REALIZADO[janPrev].entradas[0]} rotulo={`vs ${num(REALIZADO[janPrev].entradas[0])} nos últimos ${janPrev} dias`} /></Metrica>
+          <Metrica rotulo="Saídas previstas" info={INFO.saidasPrev} valor={num(saidasPrev(janPrev))}><Variacao melhor="menor" atual={saidasPrev(janPrev)} anterior={REALIZADO[janPrev].saidas[0]} rotulo={`vs ${num(REALIZADO[janPrev].saidas[0])} nos últimos ${janPrev} dias`} /></Metrica>
+          <Metrica rotulo="Saldo previsto" info={INFO.saldoPrev} valor={(saldoPrev < 0 ? "−" : "") + num(Math.abs(saldoPrev))}><Variacao atual={saldoPrev} anterior={REALIZADO[janPrev].entradas[0] - REALIZADO[janPrev].saidas[0]} rotulo={`vs ${num(REALIZADO[janPrev].entradas[0] - REALIZADO[janPrev].saidas[0])} nos últimos ${janPrev} dias`} /></Metrica>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Entradas por tipo de venda</CardTitle>
+            <CardDescription>Últimos 12 meses. Linha: tendência (média de 3 meses). Out/26 em andamento.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="overflow-x-auto"><div className="min-w-[520px]"><GraficoEntradas sel={selE} setSel={setSelE} /></div></div>
+            <ChartLegend itens={TIPOS} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>{MESES[selE]}{selE === ultimo ? ` (até dia ${HOJE.dia})` : ""}</CardDescription>
+            <CardTitle className="text-2xl tnum">{totalMes(selE)} vendas</CardTitle>
+            <div className="mt-1">
+              {selE === ultimo
+                ? <span className="text-sm text-muted-foreground">Mês em andamento, sem comparação.</span>
+                : selE > 0 && <Variacao atual={totalMes(selE)} anterior={totalMes(selE - 1)} rotulo={`vs ${totalMes(selE - 1)} em ${MESES[selE - 1]}`} />}
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            {TIPOS.map((t) => (
+              <div key={t.key} className="flex items-center justify-between gap-4">
+                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-[2px]" style={{ background: t.cor }} />{t.nome}</span>
+                <span className="inline-flex items-center gap-2 tnum">{ENTRADAS[t.key][selE]}{selE > 0 && selE !== ultimo && <VariacaoMini atual={ENTRADAS[t.key][selE]} anterior={ENTRADAS[t.key][selE - 1]} />}</span>
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter className="border-t text-sm justify-between">
+            <span className="text-muted-foreground">Média 6 meses</span><span className="tnum">{num(mediaEntradas)}</span>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Churn por vencimento</CardTitle>
+            <CardDescription>Venceram no mês e não voltaram em 45 dias. Meses listrados ainda estão na janela.</CardDescription>
+          </CardHeader>
+          <CardContent><div className="overflow-x-auto"><div className="min-w-[520px]"><GraficoChurn sel={selS} setSel={setSelS} /></div></div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>{MESES[selS]}</CardDescription>
+            <CardTitle className="text-2xl tnum">{churnFechado[selS] == null ? "Em apuração" : pct(churnFechado[selS])}</CardTitle>
+            {churnFechado[selS] != null && selS > 0 && churnFechado[selS - 1] != null && (
+              <div className="mt-1"><Variacao formato="pct" melhor="menor" atual={churnFechado[selS]} anterior={churnFechado[selS - 1]} rotulo={`vs ${pct(churnFechado[selS - 1])} em ${MESES[selS - 1]}`} /></div>
+            )}
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-sm">
+            <div className="flex justify-between"><span className="text-muted-foreground">Venceram</span><span className="tnum">{VENCIDOS[selS]}</span></div>
+            {churnFechado[selS] != null && <>
+              <div className="flex justify-between"><span className="text-muted-foreground">Renovaram ou rematricularam</span><span className="tnum">{VENCIDOS[selS] - SAIRAM[selS]}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Saíram</span><span className="tnum">{SAIRAM[selS]}</span></div>
+            </>}
+          </CardContent>
+          <CardFooter className="border-t text-sm justify-between">
+            <span className="text-muted-foreground">Média 6 meses</span><span className="tnum">{pct(mediaChurn)}</span>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <Card className="min-w-0">
+        <CardHeader>
+          <CardTitle>Saídas previstas por vencimento</CardTitle>
+          <CardDescription>Contratos que vencem nos próximos {janSaidas} dias.</CardDescription>
+          <CardAction><ToggleGroup label="Período dos vencimentos" value={janSaidas} onValueChange={setJanSaidas} options={PERIODOS} /></CardAction>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
+            <Metrica rotulo="Vencem" valor={js.total}><VariacaoMini melhor="menor" atual={js.total} anterior={REALIZADO[janSaidas].vencidos[0]} /></Metrica>
+            <Metrica rotulo="Com recorrência" valor={js.recorrentes}><span className="text-sm text-muted-foreground tnum">{pct(js.recorrentes / js.total)} dos que vencem</span></Metrica>
+            <Metrica rotulo="Sem recorrência" valor={js.total - js.recorrentes}><span className="text-sm text-muted-foreground tnum">{pct((js.total - js.recorrentes) / js.total)} dos que vencem</span></Metrica>
+            <Metrica rotulo="Saídas previstas" valor={num(saidasPrev(janSaidas))}><span className="inline-flex flex-wrap items-center gap-2 text-sm text-muted-foreground tnum">{pct(mediaChurn)} dos que vencem <VariacaoMini melhor="menor" atual={saidasPrev(janSaidas)} anterior={REALIZADO[janSaidas].saidas[0]} /></span></Metrica>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex h-2 w-full overflow-hidden rounded-full" aria-hidden="true">
+              <span style={{ width: `${(js.recorrentes / js.total) * 100}%`, background: "var(--chart-1)" }} />
+              <span style={{ width: `${(1 - js.recorrentes / js.total) * 100}%`, background: "var(--chart-2)" }} />
+            </div>
+            <ChartLegend itens={[{ nome: "Com recorrência", cor: "var(--chart-1)" }, { nome: "Sem recorrência", cor: "var(--chart-2)" }]} />
+          </div>
+          <Separator />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <FiltroFacetado titulo="Recorrência" selecionados={filtroRec} onChange={setFiltroRec} opcoes={[
+              { value: "com", label: "Com", count: contagem.com },
+              { value: "sem", label: "Sem", count: contagem.sem },
+            ]} />
+            <span className="text-sm text-muted-foreground tnum">{lista.length} de {naJanela.length} contratos (exemplo)</span>
+          </div>
+          <Table className="min-w-[520px]">
+            <TableHeader>
+              <TableRow><TableHead>Aluno</TableHead><TableHead>Plano</TableHead><TableHead>Vence em</TableHead><TableHead>Recorrência</TableHead><TableHead className="text-right">Faltam</TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
+              {lista.map((c) => (
+                <TableRow key={c.nome}>
+                  <TableCell className="font-medium">{c.nome}</TableCell>
+                  <TableCell>{c.plano}</TableCell>
+                  <TableCell className="tnum">{c.vence}</TableCell>
+                  <TableCell>{c.rec ? <Badge variant="secondary">Sim</Badge> : <Badge variant="outline">Não</Badge>}</TableCell>
+                  <TableCell className="text-right tnum">{c.dias <= 7 ? <Badge>{c.dias} dias</Badge> : `${c.dias} dias`}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ================= tela: vendas ================= */
+function TelaVendas() {
+  const statusVariant = { Sincronizada: "secondary", Pendente: "outline", Falhou: "destructive" };
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-1">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Vendas</h1>
+        <p className="text-muted-foreground">Últimas vendas sincronizadas. Números de exemplo.</p>
+      </div>
+      <Card className="min-w-0">
+        <CardHeader>
+          <CardTitle>Últimas vendas</CardTitle>
+          <CardDescription>{VENDAS.length} vendas</CardDescription>
+          <CardAction className="flex gap-2"><Button variant="outline" size="sm"><Download />Exportar</Button></CardAction>
+        </CardHeader>
+        <CardContent>
+          <Table className="min-w-[640px]">
+            <TableHeader>
+              <TableRow><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Item</TableHead><TableHead>Tipo</TableHead><TableHead className="text-right">Valor</TableHead><TableHead>Status</TableHead></TableRow>
+            </TableHeader>
+            <TableBody>
+              {VENDAS.map((v) => (
+                <TableRow key={v.id}>
+                  <TableCell className="tnum text-muted-foreground">{v.data}</TableCell>
+                  <TableCell className="font-medium">{v.cliente}</TableCell>
+                  <TableCell>{v.item}</TableCell>
+                  <TableCell>{v.tipo}</TableCell>
+                  <TableCell className="text-right tnum">{brl(v.valor)}</TableCell>
+                  <TableCell><Badge variant={statusVariant[v.status]}>{v.status}</Badge></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ================= tela: componentes ================= */
+function Palco({ children, codigo }) {
+  const [copiado, setCopiado] = useState(false);
+  function copiar() {
+    navigator.clipboard?.writeText(codigo).then(() => { setCopiado(true); setTimeout(() => setCopiado(false), 1500); }).catch(() => {});
+  }
+  return (
+    <div className="flex flex-col gap-4 min-w-0">
+      <div className="rounded-lg border p-10 flex items-center justify-center min-h-48 bg-background">{children}</div>
+      <div className="rounded-lg bg-muted p-4 flex items-start justify-between gap-4">
+        <pre className="text-sm overflow-x-auto min-w-0"><code>{codigo}</code></pre>
+        <Button size="sm" variant="ghost" onClick={copiar}><Copy />{copiado ? "Copiado" : "Copiar"}</Button>
+      </div>
+    </div>
+  );
+}
+
+function Opcoes({ id, label, valores, valor, onChange }) {
+  return (
+    <div className="grid gap-2">
+      <Label id={id}>{label}</Label>
+      <ToggleGroup label={label} value={valor} onValueChange={onChange} options={valores.map((v) => ({ value: v, label: v }))} />
+    </div>
+  );
+}
+
+function TelaComponentes() {
+  const [comp, setComp] = useState("Button");
+  const [bVariant, setBVariant] = useState("default");
+  const [bSize, setBSize] = useState("default");
+  const [badgeV, setBadgeV] = useState("default");
+  const [iErro, setIErro] = useState(false);
+  const [tg, setTg] = useState(30);
+  const [tab, setTab] = useState("a");
+
+  const area = {
+    Button: (
+      <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="flex flex-col gap-6">
+          <Opcoes id="o-bv" label="variant" valores={["default", "secondary", "outline", "ghost", "link", "destructive"]} valor={bVariant} onChange={setBVariant} />
+          <Opcoes id="o-bs" label="size" valores={["default", "sm", "lg", "icon"]} valor={bSize} onChange={setBSize} />
+        </div>
+        <Palco codigo={bSize === "icon" ? `<Button variant="${bVariant}" size="icon"><RefreshCw /></Button>` : `<Button variant="${bVariant}" size="${bSize}">Sincronizar</Button>`}>
+          <Button variant={bVariant} size={bSize}>{bSize === "icon" ? <RefreshCw /> : "Sincronizar"}</Button>
+        </Palco>
+      </div>
+    ),
+    Badge: (
+      <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <Opcoes id="o-bd" label="variant" valores={["default", "secondary", "outline", "destructive"]} valor={badgeV} onChange={setBadgeV} />
+        <Palco codigo={`<Badge variant="${badgeV}">Sincronizada</Badge>`}><Badge variant={badgeV}>Sincronizada</Badge></Palco>
+      </div>
+    ),
+    Input: (
+      <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="flex items-center gap-2 h-fit"><Checkbox id="o-ie" checked={iErro} onCheckedChange={setIErro} /><Label htmlFor="o-ie">aria-invalid</Label></div>
+        <Palco codigo={`<div className="grid gap-2">\n  <Label htmlFor="email">E-mail</Label>\n  <Input id="email" placeholder="nome@exemplo.com"${iErro ? " aria-invalid" : ""} />\n</div>`}>
+          <div className="grid gap-2 w-full max-w-sm">
+            <Label htmlFor="demo-email">E-mail</Label>
+            <Input id="demo-email" placeholder="nome@exemplo.com" aria-invalid={iErro || undefined} />
+            {iErro && <p className="text-destructive text-sm">Digite um e-mail válido.</p>}
+          </div>
+        </Palco>
+      </div>
+    ),
+    Card: (
+      <Palco codigo={`<Card>\n  <CardHeader>\n    <CardTitle>Pilates 2x semana</CardTitle>\n    <CardDescription>Turmas de até 8 alunos.</CardDescription>\n    <CardAction><Badge>Novo</Badge></CardAction>\n  </CardHeader>\n  <CardContent>…</CardContent>\n  <CardFooter><Button>Matricular</Button></CardFooter>\n</Card>`}>
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Pilates 2x semana</CardTitle>
+            <CardDescription>Turmas de até 8 alunos.</CardDescription>
+            <CardAction><Badge>Novo</Badge></CardAction>
+          </CardHeader>
+          <CardContent className="text-sm">Segundas e quartas, 7h ou 19h.</CardContent>
+          <CardFooter><Button className="w-full">Matricular</Button></CardFooter>
+        </Card>
+      </Palco>
+    ),
+    "Toggle Group": (
+      <Palco codigo={`<ToggleGroup type="single" variant="outline" value={periodo} onValueChange={setPeriodo}>\n  <ToggleGroupItem value="30">30 dias</ToggleGroupItem>\n  <ToggleGroupItem value="60">60 dias</ToggleGroupItem>\n  <ToggleGroupItem value="90">90 dias</ToggleGroupItem>\n</ToggleGroup>`}>
+        <ToggleGroup label="Período" value={tg} onValueChange={setTg} options={PERIODOS} />
+      </Palco>
+    ),
+    Tabs: (
+      <Palco codigo={`<Tabs value={aba} onValueChange={setAba}>\n  <TabsList>\n    <TabsTrigger value="kpis">KPIs</TabsTrigger>\n    <TabsTrigger value="vendas">Vendas</TabsTrigger>\n  </TabsList>\n</Tabs>`}>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList><TabsTrigger value="a">KPIs</TabsTrigger><TabsTrigger value="b">Vendas</TabsTrigger><TabsTrigger value="c">Sync</TabsTrigger></TabsList>
+        </Tabs>
+      </Palco>
+    ),
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-1">
+        <h1 className="font-display text-3xl font-semibold tracking-tight">Componentes shadcn/ui</h1>
+        <p className="text-muted-foreground">Os componentes do shadcn com o tema The Senses. O código é o que vai nas telas do projeto.</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {Object.keys(area).map((c) => <Button key={c} size="sm" variant={c === comp ? "default" : "outline"} onClick={() => setComp(c)}>{c}</Button>)}
+      </div>
+      {area[comp]}
+    </div>
+  );
+}
+
+/* ================= app ================= */
+function useTema() {
+  const [tema, setTema] = useState(() => { try { return localStorage.getItem("tema") || "sistema"; } catch { return "sistema"; } });
+  const [sistemaEscuro, setSistemaEscuro] = useState(() => matchMedia("(prefers-color-scheme: dark)").matches);
+  useEffect(() => {
+    const mq = matchMedia("(prefers-color-scheme: dark)");
+    const f = (e) => setSistemaEscuro(e.matches);
+    mq.addEventListener("change", f);
+    return () => mq.removeEventListener("change", f);
+  }, []);
+  useEffect(() => {
+    const r = document.documentElement;
+    if (tema === "sistema") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", tema === "escuro" ? "dark" : "light");
+    try { localStorage.setItem("tema", tema); } catch {}
+  }, [tema]);
+  const escuro = tema === "escuro" || (tema === "sistema" && sistemaEscuro);
+  return [tema, setTema, escuro];
+}
+
+function App() {
+  const [aba, setAba] = useState("kpis");
+  const [tema, setTema, escuro] = useTema();
+  return (
+    <div className="min-h-full bg-background text-foreground">
+      <header className="sticky z-10 border-b bg-background/95 backdrop-blur" style={{ top: "env(safe-area-inset-top, 0px)" }}>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <img src={escuro ? "data:image/png;base64,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" : "data:image/png;base64,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"} alt="The Senses Wellness Club" className="h-7 w-auto" />
+            <Badge variant="outline">Cockpit · prévia</Badge>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Tabs value={aba} onValueChange={setAba}>
+              <TabsList>
+                <TabsTrigger value="kpis">KPIs</TabsTrigger>
+                <TabsTrigger value="vendas">Vendas</TabsTrigger>
+                <TabsTrigger value="comp">Componentes</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <ToggleGroup label="Tema" value={tema} onValueChange={setTema} options={[
+              { value: "claro", label: <><Sun className="size-4" /><span className="sr-only">Claro</span></> },
+              { value: "escuro", label: <><Moon className="size-4" /><span className="sr-only">Escuro</span></> },
+              { value: "sistema", label: <><Monitor className="size-4" /><span className="sr-only">Sistema</span></> },
+            ]} />
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+        {aba === "kpis" ? <TelaKPIs /> : aba === "vendas" ? <TelaVendas /> : <TelaComponentes />}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
