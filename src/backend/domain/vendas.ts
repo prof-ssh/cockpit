@@ -2,17 +2,27 @@
 // não depende de EVO, banco ou HTTP.
 
 type ComIdSale = { idSale: number };
+type ItemBase = { idSale: number; idSaleItem: number };
 
 /** Uma venda com os seus itens. */
-export type VendaComItens<V extends ComIdSale = ComIdSale, I extends ComIdSale = ComIdSale> = {
+export type VendaComItens<V extends ComIdSale = ComIdSale, I extends ItemBase = ItemBase> = {
   venda: V;
   itens: I[];
 };
 
-/** Todo item precisa pertencer à venda que o contém. */
-export function itensPertencemAVenda({ venda, itens }: VendaComItens): boolean {
-  return itens.every((item) => item.idSale === venda.idSale);
+/**
+ * Todo item precisa pertencer à venda que o contém.
+ * Devolve o primeiro item que aponta para outra venda, ou undefined se estiver tudo certo.
+ */
+export function itemDeOutraVenda<I extends ItemBase>({
+  venda,
+  itens,
+}: VendaComItens<ComIdSale, I>): I | undefined {
+  return itens.find((item) => item.idSale !== venda.idSale);
 }
+
+/** Uma venda que não pode entrar no banco, para registrar em coleta_falhas. */
+export type Falha = { idSale: number | null; idSaleItem: number | null; motivo: string };
 
 /**
  * A mesma venda repetida com dados iguais conta uma vez só.

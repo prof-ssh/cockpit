@@ -2,6 +2,7 @@ import { db } from "../client";
 
 export type Periodo = { periodoInicio: Date; periodoFim: Date };
 export type Contagem = { criadas: number; existentes: number; falhas: number };
+export type NovaFalha = { idSale: number | null; idSaleItem: number | null; motivo: string };
 
 /** Registra o início de um sync (status em_andamento) e devolve o id. */
 export async function iniciarColeta(periodo: Periodo): Promise<number> {
@@ -9,12 +10,19 @@ export async function iniciarColeta(periodo: Periodo): Promise<number> {
   return coleta.id;
 }
 
-/** Fecha a coleta com sucesso e as quantidades. */
-export async function concluirColeta(id: number, contagem: Contagem): Promise<void> {
-  await db().coleta.update({
-    where: { id },
-    data: { ...contagem, status: "sucesso", finalizadaEm: new Date() },
-  });
+/** Fecha a coleta com sucesso, as quantidades e as vendas que falharam (tudo ou nada). */
+export async function concluirColeta(
+  id: number,
+  contagem: Contagem,
+  falhas: NovaFalha[],
+): Promise<void> {
+  await db().$transaction([
+    db().coleta.update({
+      where: { id },
+      data: { ...contagem, status: "sucesso", finalizadaEm: new Date() },
+    }),
+    db().coletaFalha.createMany({ data: falhas.map((f) => ({ ...f, coletaId: id })) }),
+  ]);
 }
 
 /** Fecha a coleta com erro e a mensagem. */

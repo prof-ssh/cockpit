@@ -164,7 +164,7 @@ Cada chamada a `POST /api/sync` vira uma linha, criada no início (`em_andamento
 | `criadas`, `existentes`, `falhas` | `integer` | O mesmo que a rota responde. |
 | `erro` | `text` | Mensagem quando `status = erro`. |
 
-### Tabela `coleta_falhas` (decidida, ainda não implementada)
+### Tabela `coleta_falhas`
 
 Hoje as vendas que falham no sync só aparecem no log do terminal e se perdem. Esta tabela guarda
 **só as vendas que deram errado**, ligadas à coleta que as gerou (cabeçalho / detalhe, como
@@ -183,8 +183,9 @@ Hoje as vendas que falham no sync só aparecem no log do terminal e se perdem. E
   tira a venda inteira, e não existe "reprocessar só um item".
 - **`idSale` e `idSaleItem` em colunas separadas:** são numerações diferentes (a venda 100 e o
   item 100 não têm relação); misturar numa coluna só deixaria o ID ambíguo.
-- **Em aberto:** `idSale` aceitar nulo (venda sem ID válido) e como limpar as falhas antigas
-  (ver [`todo.md`](todo.md)).
+- **`idSale` nulo:** só quando o defeito é o próprio `idSale`; essa falha se reprocessa pelo
+  período da coleta.
+- **Em aberto:** reprocessamento e limpeza das falhas antigas (ver [`todo.md`](todo.md)).
 
 ## Banco de dados
 

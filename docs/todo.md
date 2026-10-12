@@ -50,6 +50,4 @@ Desenho da tabela no [`plan.md`](plan.md). O que falta decidir:
 - **Limpeza:** se e quando apagar registros antigos, para a tabela não crescer para sempre.
   Opções: nunca apagar falha `pendente` e apagar as `resolvida` depois de X dias; apagar
   coletas antigas inteiras (as falhas vão junto); ou só manualmente.
-- **Venda sem `idSale` válido:** registrar com `idSale` nulo (reprocessa pelo período da coleta)
-  ou deixar de fora da tabela e contar só no erro da coleta.
 - **Exportar:** como gerar a planilha com os IDs que falharam.
