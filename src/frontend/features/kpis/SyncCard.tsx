@@ -1,11 +1,15 @@
 "use client";
 
 import { useCallback, useState, type FormEvent } from "react";
-import { RefreshCw } from "lucide-react";
+import { CalendarIcon, RefreshCw } from "lucide-react";
+import type { DateRange } from "react-day-picker";
+import { ptBR } from "react-day-picker/locale";
+import { Alert, AlertDescription } from "@/frontend/design-system/components/ui/alert";
 import { Button } from "@/frontend/design-system/components/ui/button";
+import { Calendar } from "@/frontend/design-system/components/ui/calendar";
 import { Card, CardContent } from "@/frontend/design-system/components/ui/card";
-import { Input } from "@/frontend/design-system/components/ui/input";
 import { Label } from "@/frontend/design-system/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/frontend/design-system/components/ui/popover";
 import { buscarUltimaColeta, sincronizar } from "./dados";
 import { EstadoWidget } from "./EstadoWidget";
 import { diaMes, hojeLocal, num, quando, somarDias } from "./formato";
@@ -61,16 +65,26 @@ function UltimoSync({ dados }: { dados: UltimaColeta }) {
   );
 }
 
+/** "AAAA-MM-DD" ↔ Date no horário local (o calendário trabalha com Date local). */
+const paraData = (iso: string) => new Date(`${iso}T00:00:00`);
+const paraIso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 function FormularioSync({ vendasAte, aoSincronizar }: { vendasAte: string | null; aoSincronizar: () => void }) {
   const hoje = hojeLocal();
-  const [inicio, setInicio] = useState(vendasAte ? somarDias(vendasAte, 1) : hoje);
-  const [fim, setFim] = useState(hoje);
+  const sugerido = vendasAte && vendasAte < hoje ? somarDias(vendasAte, 1) : hoje;
+  const [periodo, setPeriodo] = useState<DateRange | undefined>({ from: paraData(sugerido), to: paraData(hoje) });
+  const [aberto, setAberto] = useState(false);
   const [envio, setEnvio] = useState<Envio>({ estado: "parado" });
-  const datasInvalidas = Boolean(inicio && fim && fim < inicio);
+
+  const inicio = periodo?.from ? paraIso(periodo.from) : null;
+  // Um dia só: clicar uma vez no calendário marca início e fim iguais.
+  const fim = periodo?.to ? paraIso(periodo.to) : inicio;
+  const rotulo = inicio && fim ? (inicio === fim ? diaMes(inicio) : `${diaMes(inicio)} a ${diaMes(fim)}`) : "Escolha o período";
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (datasInvalidas || !inicio || !fim) return;
+    if (!inicio || !fim) return;
     setEnvio({ estado: "rodando" });
     try {
       const resultado = await sincronizar({ periodoInicio: inicio, periodoFim: fim });
@@ -84,34 +98,40 @@ function FormularioSync({ vendasAte, aoSincronizar }: { vendasAte: string | null
   return (
     <div className="flex flex-col gap-2 lg:items-end">
       <form onSubmit={enviar} className="flex flex-wrap items-end gap-3">
-        <div className="grid w-40 gap-1.5">
-          <Label htmlFor="sync-de" className="text-xs text-muted-foreground">De</Label>
-          <Input id="sync-de" type="date" required value={inicio} max={hoje} onChange={(e) => setInicio(e.target.value)} />
+        <div className="grid gap-1.5">
+          <Label htmlFor="sync-periodo" className="text-xs text-muted-foreground">Período</Label>
+          <Popover open={aberto} onOpenChange={setAberto}>
+            <PopoverTrigger asChild>
+              <Button id="sync-periodo" type="button" variant="outline" className="w-56 justify-start font-normal tabular-nums">
+                <CalendarIcon aria-hidden />
+                {rotulo}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                locale={ptBR}
+                numberOfMonths={1}
+                selected={periodo}
+                onSelect={setPeriodo}
+                defaultMonth={periodo?.to ?? periodo?.from}
+                disabled={{ after: paraData(hoje) }}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="grid w-40 gap-1.5">
-          <Label htmlFor="sync-ate" className="text-xs text-muted-foreground">Até</Label>
-          <Input
-            id="sync-ate"
-            type="date"
-            required
-            value={fim}
-            max={hoje}
-            aria-invalid={datasInvalidas || undefined}
-            aria-describedby={datasInvalidas ? "sync-erro-data" : undefined}
-            onChange={(e) => setFim(e.target.value)}
-          />
-        </div>
-        <Button type="submit" disabled={envio.estado === "rodando" || datasInvalidas}>
+        <Button type="submit" disabled={envio.estado === "rodando" || !inicio}>
           <RefreshCw aria-hidden className={envio.estado === "rodando" ? "animate-spin motion-reduce:animate-none" : ""} />
           {envio.estado === "rodando" ? "Sincronizando…" : "Sincronizar"}
         </Button>
       </form>
       <div aria-live="polite" className="text-sm tabular-nums">
-        {datasInvalidas && (
-          <p id="sync-erro-data" className="text-destructive">A data final precisa ser depois da inicial.</p>
-        )}
         {envio.estado === "ok" && <p>{resumo(envio.resultado)}</p>}
-        {envio.estado === "erro" && <p className="text-destructive">Sync não concluído: {envio.mensagem}</p>}
+        {envio.estado === "erro" && (
+          <Alert variant="destructive" className="py-2">
+            <AlertDescription>Sync não concluído: {envio.mensagem}</AlertDescription>
+          </Alert>
+        )}
       </div>
     </div>
   );

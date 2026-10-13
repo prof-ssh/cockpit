@@ -13,8 +13,8 @@ export function Cabecalho({ children }: { children?: ReactNode }) {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-4">
           {/* Um logo por tema; o CSS mostra o certo, sem esperar o JavaScript. */}
-          <Image src="/logo-claro.png" alt="The Senses Wellness Club" width={86} height={28} priority className="h-7 w-auto dark:hidden" />
-          <Image src="/logo-escuro.png" alt="The Senses Wellness Club" width={86} height={28} priority className="hidden h-7 w-auto dark:block" />
+          <Image src="/logo-claro.png" alt="The Senses Wellness Club" width={171} height={36} priority className="h-9 w-auto dark:hidden" />
+          <Image src="/logo-escuro.png" alt="The Senses Wellness Club" width={171} height={36} priority className="hidden h-9 w-auto dark:block" />
           {children}
         </div>
         <EscolhaDeTema />

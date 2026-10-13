@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/frontend/design-system/components/ui/card";
+import { Progress } from "@/frontend/design-system/components/ui/progress";
 import { Separator } from "@/frontend/design-system/components/ui/separator";
 import {
   Table,
@@ -97,10 +98,8 @@ function Conteudo({ dados }: { dados: Vencimentos }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex h-2 w-full overflow-hidden rounded-full" aria-hidden>
-          <span style={{ width: `${(recorrentes / total) * 100}%`, background: "var(--chart-1)" }} />
-          <span style={{ width: `${(naoRecorrentes / total) * 100}%`, background: "var(--chart-2)" }} />
-        </div>
+        {/* Parte cheia (Tiffany) = com recorrência; o fundo (chart-2) = sem recorrência. */}
+        <Progress value={(recorrentes / total) * 100} className="bg-chart-2" aria-label="Contratos com recorrência" />
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
             <span className="size-2 rounded-[2px] bg-chart-1" aria-hidden />
