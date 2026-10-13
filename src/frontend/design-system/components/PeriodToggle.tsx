@@ -1,7 +1,7 @@
 "use client";
 
 import { ToggleGroup, ToggleGroupItem } from "@/frontend/design-system/components/ui/toggle-group";
-import { cn } from "@/frontend/design-system/lib/utils";
+import { cn } from "cn";
 
 type PeriodToggleProps<T extends number> = {
   value: T;

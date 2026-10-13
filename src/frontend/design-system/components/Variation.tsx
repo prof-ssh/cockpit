@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { Badge } from "@/frontend/design-system/components/ui/badge";
-import { cn } from "@/frontend/design-system/lib/utils";
+import { cn } from "cn";
 
 type VariationProps = {
   current: number;

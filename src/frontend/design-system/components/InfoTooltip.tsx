@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Info } from "lucide-react";
+import { Button } from "@/frontend/design-system/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/frontend/design-system/components/ui/tooltip";
 
 type InfoTooltipProps = {
@@ -16,14 +17,16 @@ export function InfoTooltip({ label, children }: InfoTooltipProps) {
   return (
     <Tooltip open={aberto} onOpenChange={setAberto}>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-label={label}
           onClick={() => setAberto((a) => !a)}
-          className="inline-flex rounded-full text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="size-5 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground"
         >
-          <Info className="size-4" aria-hidden />
-        </button>
+          <Info aria-hidden />
+        </Button>
       </TooltipTrigger>
       <TooltipContent className="w-72 max-w-[calc(100vw-2rem)] text-left text-xs leading-relaxed">
         {children}

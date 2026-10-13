@@ -1,8 +1,9 @@
 "use client";
 
-import { Check, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Badge } from "@/frontend/design-system/components/ui/badge";
 import { Button } from "@/frontend/design-system/components/ui/button";
+import { Checkbox } from "@/frontend/design-system/components/ui/checkbox";
 import {
   Command,
   CommandGroup,
@@ -12,7 +13,6 @@ import {
 } from "@/frontend/design-system/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/frontend/design-system/components/ui/popover";
 import { Separator } from "@/frontend/design-system/components/ui/separator";
-import { cn } from "@/frontend/design-system/lib/utils";
 
 export type FacetedOption = { value: string; label: string; count: number };
 
@@ -56,15 +56,12 @@ export function FacetedFilter({ title, options, selected, onChange }: FacetedFil
                 const marcado = selected.includes(o.value);
                 return (
                   <CommandItem key={o.value} onSelect={() => alternar(o.value)}>
-                    <span
-                      className={cn(
-                        "flex size-4 items-center justify-center rounded-[4px] border border-input",
-                        marcado && "border-primary bg-primary text-primary-foreground",
-                      )}
-                    >
-                      {marcado && <Check className="size-3 text-primary-foreground" aria-hidden />}
+                    {/* Só mostra o estado: quem marca é o item inteiro (onSelect). */}
+                    <Checkbox checked={marcado} tabIndex={-1} aria-hidden className="pointer-events-none" />
+                    <span>
+                      {o.label}
+                      <span className="sr-only">{marcado ? ", marcado" : ""}</span>
                     </span>
-                    <span>{o.label}</span>
                     <span className="ml-auto text-xs text-muted-foreground tabular-nums">{o.count}</span>
                   </CommandItem>
                 );
